@@ -41,14 +41,6 @@ func (h *shortenerHandler) handlePost(w http.ResponseWriter, r *http.Request) er
 		return fmt.Errorf("unsupported POST path %q", r.URL.Path)
 	}
 
-	/*
-		contentType := r.Header.Get("Content-Type")
-
-			if contentType != "text/plain" {
-				return fmt.Errorf("unsupported content type %q", contentType)
-			}
-	*/
-
 	sb := &strings.Builder{}
 	io.Copy(sb, r.Body)
 	short, err := h.shrinker.Shrink(sb.String())
