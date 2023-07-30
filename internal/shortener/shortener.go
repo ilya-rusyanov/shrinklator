@@ -3,6 +3,7 @@ package shortener
 import (
 	"errors"
 	"math/big"
+	"sync"
 )
 
 const base = 62
@@ -10,9 +11,13 @@ const base = 62
 type Shortener struct {
 	short2long map[int64]string
 	long2short map[string]int64
+	mutex      sync.Mutex
 }
 
 func (s *Shortener) Shrink(input string) (string, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	var hash int64
 
 	if short, ok := s.long2short[input]; ok {
@@ -32,6 +37,9 @@ var errUnknown = errors.New("unknown")
 var errHashing = errors.New("bad input")
 
 func (s *Shortener) Expand(input string) (string, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	hasher := big.Int{}
 
 	if _, ok := hasher.SetString(input, base); !ok {
