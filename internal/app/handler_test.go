@@ -67,6 +67,7 @@ func TestHandler(t *testing.T) {
 			h.ServeHTTP(w, request)
 
 			res := w.Result()
+			defer res.Body.Close()
 
 			assert.Equal(t, test.want.code, res.StatusCode)
 		})
@@ -83,6 +84,7 @@ func TestHandler(t *testing.T) {
 		h.ServeHTTP(w, request)
 
 		res := w.Result()
+		defer res.Body.Close()
 
 		assert.Equal(t, http.StatusCreated, res.StatusCode)
 	})
@@ -96,6 +98,7 @@ func TestHandler(t *testing.T) {
 		h.ServeHTTP(w, request)
 
 		res := w.Result()
+		defer res.Body.Close()
 
 		assert.Equal(t, http.StatusTemporaryRedirect, res.StatusCode)
 	})
