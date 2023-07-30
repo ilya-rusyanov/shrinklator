@@ -1,7 +1,6 @@
 package shortener
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -50,7 +49,7 @@ func TestShortener(t *testing.T) {
 		}
 
 		if got != url {
-			fmt.Errorf("got %q want %q", got, url)
+			t.Errorf("got %q want %q", got, url)
 		}
 	})
 
