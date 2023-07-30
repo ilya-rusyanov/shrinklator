@@ -65,6 +65,7 @@ func (h *shortenerHandler) handlePost(w http.ResponseWriter, r *http.Request) er
 
 	result := self + "/" + short
 
+	w.WriteHeader(http.StatusCreated)
 	io.WriteString(w, result)
 
 	return nil
