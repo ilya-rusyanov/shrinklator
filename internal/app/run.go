@@ -32,7 +32,7 @@ func (h *shortenerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		io.WriteString(w, err.Error()+"\n")
+		io.WriteString(w, err.Error())
 	}
 }
 
@@ -65,7 +65,7 @@ func (h *shortenerHandler) handlePost(w http.ResponseWriter, r *http.Request) er
 
 	result := self + "/" + short
 
-	io.WriteString(w, result+"\n")
+	io.WriteString(w, result)
 
 	return nil
 }
