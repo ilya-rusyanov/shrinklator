@@ -1,7 +1,7 @@
 package main
 
-import "github.com/ilya-rusyanov/shrinklator/internal/app"
+import "github.com/ilya-rusyanov/shrinklator/internal/server"
 
 func main() {
-	app.Run()
+	server.Run()
 }
