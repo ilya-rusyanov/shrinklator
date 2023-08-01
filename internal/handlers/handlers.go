@@ -72,6 +72,25 @@ func (h *shortenerHandler) handleGet(w http.ResponseWriter, r *http.Request) err
 	return nil
 }
 
+func postHandler(shrinker Shrinker) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		sb := &strings.Builder{}
+		io.Copy(sb, r.Body)
+		short := shrinker.Shrink(sb.String())
+
+		scheme := "http"
+		if r.TLS != nil {
+			scheme = "https"
+		}
+		self := scheme + "://" + r.Host
+
+		result := self + "/" + short
+
+		rw.WriteHeader(http.StatusCreated)
+		io.WriteString(rw, result)
+	}
+}
+
 func NewHandler(s Shrinker) *shortenerHandler {
-    return &shortenerHandler{s}
+	return &shortenerHandler{s}
 }
