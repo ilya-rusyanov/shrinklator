@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ilya-rusyanov/shrinklator/internal/shortener"
+	"github.com/ilya-rusyanov/shrinklator/internal/models"
 )
 
 type shrinker interface {
@@ -79,7 +79,7 @@ func (h *shortenerHandler) handleGet(w http.ResponseWriter, r *http.Request) err
 }
 
 func Run() {
-	sh := shortener.New()
+	sh := models.New()
 	err := http.ListenAndServe("localhost:8080", &shortenerHandler{sh})
 	if err != nil {
 		panic(err)

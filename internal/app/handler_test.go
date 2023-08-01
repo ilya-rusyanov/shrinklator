@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ilya-rusyanov/shrinklator/internal/shortener"
+	"github.com/ilya-rusyanov/shrinklator/internal/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -59,7 +59,7 @@ func TestHandler(t *testing.T) {
 
 	for _, test := range errTests {
 		t.Run(test.name, func(t *testing.T) {
-			h := shortenerHandler{shortener.New()}
+			h := shortenerHandler{models.New()}
 
 			request := httptest.NewRequest(test.method, test.path, nil)
 
@@ -74,7 +74,7 @@ func TestHandler(t *testing.T) {
 	}
 
 	t.Run("post", func(t *testing.T) {
-		h := shortenerHandler{shortener.New()}
+		h := shortenerHandler{models.New()}
 
 		bodyReader := strings.NewReader("http://yandex.ru")
 
