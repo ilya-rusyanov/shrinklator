@@ -2,19 +2,17 @@ package models
 
 import (
 	"testing"
+
+	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 )
 
 func TestShortener(t *testing.T) {
 	t.Run("short new", func(t *testing.T) {
-		s := New()
+		s := New(storage.New())
 
-		got, err := s.Shrink("http://yandex.ru")
+		got := s.Shrink("http://yandex.ru")
 
-		if err != nil {
-			t.Fatal("got error")
-		}
-
-		want := "0"
+		want := "664b8054bac1af66baafa7a01acd15ee"
 
 		if got != want {
 			t.Errorf("got %q want %q", got, want)
@@ -22,7 +20,7 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand unknown", func(t *testing.T) {
-		s := New()
+		s := New(storage.New())
 
 		_, err := s.Expand("a")
 
@@ -32,15 +30,11 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand known", func(t *testing.T) {
-		s := New()
+		s := New(storage.New())
 
 		url := "http://yandex.ru"
 
-		short, err := s.Shrink(url)
-
-		if err != nil {
-			t.Fatal("must be valid operation")
-		}
+		short := s.Shrink(url)
 
 		got, err := s.Expand(short)
 
@@ -54,7 +48,7 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand unknown", func(t *testing.T) {
-		s := New()
+		s := New(storage.New())
 
 		_, err := s.Expand("http://google.com")
 

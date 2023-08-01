@@ -7,14 +7,15 @@ import (
 	"testing"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/models"
+	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 	"github.com/stretchr/testify/assert"
 )
 
 type fakeShrinker struct {
 }
 
-func (s *fakeShrinker) Shrink(string) (string, error) {
-	return "", nil
+func (s *fakeShrinker) Shrink(string) string {
+	return ""
 }
 
 func (s *fakeShrinker) Expand(string) (string, error) {
@@ -59,7 +60,7 @@ func TestHandler(t *testing.T) {
 
 	for _, test := range errTests {
 		t.Run(test.name, func(t *testing.T) {
-			h := shortenerHandler{models.New()}
+			h := shortenerHandler{models.New(storage.New())}
 
 			request := httptest.NewRequest(test.method, test.path, nil)
 
@@ -74,7 +75,7 @@ func TestHandler(t *testing.T) {
 	}
 
 	t.Run("post", func(t *testing.T) {
-		h := shortenerHandler{models.New()}
+		h := shortenerHandler{models.New(storage.New())}
 
 		bodyReader := strings.NewReader("http://yandex.ru")
 

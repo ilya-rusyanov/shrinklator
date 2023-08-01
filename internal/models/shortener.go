@@ -1,63 +1,41 @@
 package models
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
-	"math/big"
-	"sync"
+	"fmt"
+
+	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 )
 
 const base = 62
 
 type Shortener struct {
-	short2long map[int64]string
-	long2short map[string]int64
-	mutex      sync.Mutex
+	storage *storage.Storage
 }
 
-func (s *Shortener) Shrink(input string) (string, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	var hash int64
-
-	if short, ok := s.long2short[input]; ok {
-		hash = short
-	} else {
-		hash = int64(len(s.long2short))
-		s.long2short[input] = hash
-		s.short2long[hash] = input
-	}
-
-	var b62 big.Int
-	b62.SetInt64(hash)
-	return b62.Text(base), nil
+func (s *Shortener) Shrink(input string) string {
+	hash := md5.Sum([]byte(input))
+	hashStr := hex.EncodeToString(hash[:])
+	s.storage.Put(hashStr, input)
+	return hashStr
 }
 
 var errUnknown = errors.New("unknown")
 var errHashing = errors.New("bad input")
 
 func (s *Shortener) Expand(input string) (string, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	url, err := s.storage.ByID(input)
 
-	hasher := big.Int{}
-
-	if _, ok := hasher.SetString(input, base); !ok {
-		return "", errHashing
+	if err != nil {
+		return "", fmt.Errorf("error searching: %w", err)
 	}
 
-	hash := hasher.Int64()
-
-	if result, ok := s.short2long[hash]; ok {
-		return result, nil
-	}
-
-	return "", errUnknown
+	return url, nil
 }
 
-func New() *Shortener {
-	res := &Shortener{}
-	res.short2long = map[int64]string{}
-	res.long2short = map[string]int64{}
+func New(storage *storage.Storage) *Shortener {
+	res := &Shortener{storage}
 	return res
 }

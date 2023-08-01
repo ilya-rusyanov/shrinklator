@@ -7,10 +7,11 @@ import (
 	"strings"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/models"
+	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 )
 
 type shrinker interface {
-	Shrink(string) (string, error)
+	Shrink(string) string
 	Expand(string) (string, error)
 }
 
@@ -43,11 +44,7 @@ func (h *shortenerHandler) handlePost(w http.ResponseWriter, r *http.Request) er
 
 	sb := &strings.Builder{}
 	io.Copy(sb, r.Body)
-	short, err := h.shrinker.Shrink(sb.String())
-
-	if err != nil {
-		return fmt.Errorf("error shortening: %w", err)
-	}
+	short := h.shrinker.Shrink(sb.String())
 
 	scheme := "http"
 	if r.TLS != nil {
@@ -79,7 +76,7 @@ func (h *shortenerHandler) handleGet(w http.ResponseWriter, r *http.Request) err
 }
 
 func Run() {
-	sh := models.New()
+	sh := models.New(storage.New())
 	err := http.ListenAndServe("localhost:8080", &shortenerHandler{sh})
 	if err != nil {
 		panic(err)
