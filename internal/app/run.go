@@ -80,5 +80,8 @@ func (h *shortenerHandler) handleGet(w http.ResponseWriter, r *http.Request) err
 
 func Run() {
 	sh := shortener.New()
-	http.ListenAndServe("localhost:8080", &shortenerHandler{sh})
+	err := http.ListenAndServe("localhost:8080", &shortenerHandler{sh})
+	if err != nil {
+		panic(err)
+	}
 }
