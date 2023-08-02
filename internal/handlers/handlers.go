@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/ilya-rusyanov/shrinklator/internal/config"
 )
 
 type Shrinker interface {
@@ -19,13 +20,7 @@ func postHandler(shrinker Shrinker) http.HandlerFunc {
 		io.Copy(sb, r.Body)
 		short := shrinker.Shrink(sb.String())
 
-		scheme := "http"
-		if r.TLS != nil {
-			scheme = "https"
-		}
-		self := scheme + "://" + r.Host
-
-		result := self + "/" + short
+		result := config.Values.BasePath + "/" + short
 
 		rw.WriteHeader(http.StatusCreated)
 		io.WriteString(rw, result)
