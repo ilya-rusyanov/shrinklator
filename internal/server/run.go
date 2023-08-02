@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 
+	"github.com/ilya-rusyanov/shrinklator/internal/config"
 	"github.com/ilya-rusyanov/shrinklator/internal/handlers"
 	"github.com/ilya-rusyanov/shrinklator/internal/models"
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
@@ -10,7 +11,10 @@ import (
 
 func Run() {
 	sh := models.New(storage.New())
-	err := http.ListenAndServe("localhost:8080", handlers.NewHandler(sh))
+
+	err := http.ListenAndServe(config.Values.ListenAddr,
+		handlers.NewHandler(sh))
+
 	if err != nil {
 		panic(err)
 	}
