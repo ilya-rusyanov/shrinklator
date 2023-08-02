@@ -78,85 +78,65 @@ func TestPostHandler(t *testing.T) {
 	}
 }
 
-func TestHandler(t *testing.T) {
+func TestGetHandler(t *testing.T) {
 	type want struct {
-		code int
+		code             int
+		redirectLocation string
 	}
-	errTests := []struct {
-		name   string
-		method string
-		path   string
-		want   want
+	tests := []struct {
+		testName string
+		arg      string
+		want     want
 	}{
 		{
-			name:   "unsupported method",
-			method: http.MethodHead,
-			path:   "/",
+			testName: "empty request",
+			arg:      "",
 			want: want{
-				code: http.StatusBadRequest,
+				code:             http.StatusBadRequest,
+				redirectLocation: "",
 			},
 		},
 		{
-			name:   "unsupported path",
-			method: http.MethodPost,
-			path:   "/nowhere",
+			testName: "nonexistent request",
+			arg:      "a0",
 			want: want{
-				code: http.StatusBadRequest,
+				code:             http.StatusBadRequest,
+				redirectLocation: "",
 			},
 		},
 		{
-			name:   "unknown url",
-			method: http.MethodGet,
-			path:   "/a0",
+			testName: "existing url",
+			arg:      "664b8054bac1af66baafa7a01acd15ee",
 			want: want{
-				code: http.StatusBadRequest,
+				code:             http.StatusTemporaryRedirect,
+				redirectLocation: "http://yandex.ru",
 			},
 		},
 	}
 
-	for _, test := range errTests {
-		t.Run(test.name, func(t *testing.T) {
-			h := shortenerHandler{models.New(storage.New())}
+	storage := storage.New()
+	storage.Put("664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru")
 
-			request := httptest.NewRequest(test.method, test.path, nil)
+	for _, test := range tests {
+		t.Run(test.testName, func(t *testing.T) {
+			model := models.New(storage)
+			handler := getHandler(model)
 
-			w := httptest.NewRecorder()
-			h.ServeHTTP(w, request)
+			req, err := http.NewRequest(
+				http.MethodGet,
+				"/"+test.arg,
+				nil)
 
-			res := w.Result()
-			defer res.Body.Close()
+			require.NoError(t, err)
 
-			assert.Equal(t, test.want.code, res.StatusCode)
+			resp := httptest.NewRecorder()
+			handler.ServeHTTP(resp, req)
+
+			assert.Equal(t,
+				test.want.redirectLocation,
+				resp.Header().Get("Location"))
+
+			assert.Equal(t, test.want.code, resp.Code)
 		})
 	}
-
-	t.Run("post", func(t *testing.T) {
-		h := shortenerHandler{models.New(storage.New())}
-
-		bodyReader := strings.NewReader("http://yandex.ru")
-
-		request := httptest.NewRequest(http.MethodPost, "/", bodyReader)
-
-		w := httptest.NewRecorder()
-		h.ServeHTTP(w, request)
-
-		res := w.Result()
-		defer res.Body.Close()
-
-		assert.Equal(t, http.StatusCreated, res.StatusCode)
-	})
-
-	t.Run("get", func(t *testing.T) {
-		h := shortenerHandler{&fakeShrinker{}}
-
-		request := httptest.NewRequest(http.MethodGet, "/0", nil)
-
-		w := httptest.NewRecorder()
-		h.ServeHTTP(w, request)
-
-		res := w.Result()
-		defer res.Body.Close()
-
-		assert.Equal(t, http.StatusTemporaryRedirect, res.StatusCode)
-	})
 }
