@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ilya-rusyanov/shrinklator/internal/config"
 	"github.com/ilya-rusyanov/shrinklator/internal/models"
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 
@@ -28,8 +27,6 @@ func (s *fakeShrinker) Expand(string) (string, error) {
 }
 
 func TestPostHandler(t *testing.T) {
-	config.Init()
-
 	type want struct {
 		code     int
 		response string
@@ -55,7 +52,8 @@ func TestPostHandler(t *testing.T) {
 			storage := storage.New()
 			model := models.New(storage)
 
-			server := httptest.NewServer(postHandler(model))
+			server := httptest.NewServer(
+				postHandler(model, "http://localhost:8080"))
 			defer server.Close()
 
 			req, err := http.NewRequest(

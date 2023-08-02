@@ -15,13 +15,13 @@ type Shrinker interface {
 	Expand(string) (string, error)
 }
 
-func postHandler(shrinker Shrinker) http.HandlerFunc {
+func postHandler(shrinker Shrinker, basePath string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		sb := &strings.Builder{}
 		io.Copy(sb, r.Body)
 		short := shrinker.Shrink(sb.String())
 
-		result := config.Values.BasePath + "/" + short
+		result := basePath + "/" + short
 
 		rw.WriteHeader(http.StatusCreated)
 		io.WriteString(rw, result)
@@ -47,7 +47,7 @@ func getHandler(shrinker Shrinker) http.HandlerFunc {
 func NewHandler(s Shrinker) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-	r.Post("/", postHandler(s))
+	r.Post("/", postHandler(s, config.Values.BasePath))
 	r.Get("/{id}", getHandler(s))
 	return r
 }
