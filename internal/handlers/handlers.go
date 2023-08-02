@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/ilya-rusyanov/shrinklator/internal/config"
 )
@@ -44,8 +45,9 @@ func getHandler(shrinker Shrinker) http.HandlerFunc {
 }
 
 func NewHandler(s Shrinker) http.Handler {
-	router := chi.NewRouter()
-	router.Post("/", postHandler(s))
-	router.Get("/{id}", getHandler(s))
-	return router
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Post("/", postHandler(s))
+	r.Get("/{id}", getHandler(s))
+	return r
 }
