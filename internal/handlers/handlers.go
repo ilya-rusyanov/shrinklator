@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/go-chi/chi/middleware"
@@ -32,7 +34,11 @@ func postHandler(shrinker shrinker, basePath string) http.HandlerFunc {
 		result := basePath + "/" + short
 
 		rw.WriteHeader(http.StatusCreated)
-		io.WriteString(rw, result)
+		_, err := io.WriteString(rw, result)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(os.Stderr, "unable to write response: %v", err)
+		}
 	}
 }
 
