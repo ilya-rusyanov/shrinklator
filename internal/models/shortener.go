@@ -9,8 +9,15 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 )
 
+var errHashing = errors.New("bad input")
+
 type Shortener struct {
 	storage *storage.Storage
+}
+
+func New(storage *storage.Storage) *Shortener {
+	res := &Shortener{storage}
+	return res
 }
 
 func (s *Shortener) Shrink(input string) string {
@@ -20,8 +27,6 @@ func (s *Shortener) Shrink(input string) string {
 	return hashStr
 }
 
-var errHashing = errors.New("bad input")
-
 func (s *Shortener) Expand(input string) (string, error) {
 	url, err := s.storage.ByID(input)
 
@@ -30,9 +35,4 @@ func (s *Shortener) Expand(input string) (string, error) {
 	}
 
 	return url, nil
-}
-
-func New(storage *storage.Storage) *Shortener {
-	res := &Shortener{storage}
-	return res
 }

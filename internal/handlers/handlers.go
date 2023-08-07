@@ -15,6 +15,14 @@ type Shrinker interface {
 	Expand(string) (string, error)
 }
 
+func NewHandler(s Shrinker) http.Handler {
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Post("/", postHandler(s, config.Values.BasePath))
+	r.Get("/{id}", getHandler(s))
+	return r
+}
+
 func postHandler(shrinker Shrinker, basePath string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		sb := &strings.Builder{}
@@ -42,12 +50,4 @@ func getHandler(shrinker Shrinker) http.HandlerFunc {
 		rw.Header().Add("Location", url)
 		rw.WriteHeader(http.StatusTemporaryRedirect)
 	}
-}
-
-func NewHandler(s Shrinker) http.Handler {
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Post("/", postHandler(s, config.Values.BasePath))
-	r.Get("/{id}", getHandler(s))
-	return r
 }
