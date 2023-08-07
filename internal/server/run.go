@@ -20,14 +20,16 @@ func newRouter(expandHandler http.HandlerFunc, shortenHandler http.HandlerFunc) 
 }
 
 func Run() {
+	config := config.New()
+	config.Parse()
+
 	sh := models.New(storage.New())
 
 	router := newRouter(
-		handlers.Shorten(sh, config.Values.BasePath),
+		handlers.Shorten(sh, config.BasePath),
 		handlers.Expand(sh))
 
-	err := http.ListenAndServe(config.Values.ListenAddr,
-		router)
+	err := http.ListenAndServe(config.ListenAddr, router)
 
 	if err != nil {
 		panic(err)
