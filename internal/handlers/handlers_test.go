@@ -42,7 +42,7 @@ func TestShortenHandler(t *testing.T) {
 			model := models.New(storage)
 
 			server := httptest.NewServer(
-				shorten(model, "http://localhost:8080"))
+				Shorten(model, "http://localhost:8080"))
 			defer server.Close()
 
 			req, err := http.NewRequest(
@@ -110,7 +110,7 @@ func TestExpandHandler(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
 			model := models.New(storage)
-			handler := expand(model)
+			handler := Expand(model)
 
 			req, err := http.NewRequest(
 				http.MethodGet,

@@ -6,10 +6,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-
-	"github.com/go-chi/chi/middleware"
-	"github.com/go-chi/chi/v5"
-	"github.com/ilya-rusyanov/shrinklator/internal/config"
 )
 
 type shrinker interface {
@@ -17,15 +13,7 @@ type shrinker interface {
 	Expand(string) (string, error)
 }
 
-func NewHandler(s shrinker) http.Handler {
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Post("/", shorten(s, config.Values.BasePath))
-	r.Get("/{id}", expand(s))
-	return r
-}
-
-func shorten(shrinker shrinker, basePath string) http.HandlerFunc {
+func Shorten(shrinker shrinker, basePath string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		sb := &strings.Builder{}
 		io.Copy(sb, r.Body)
@@ -42,7 +30,7 @@ func shorten(shrinker shrinker, basePath string) http.HandlerFunc {
 	}
 }
 
-func expand(shrinker shrinker) http.HandlerFunc {
+func Expand(shrinker shrinker) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		id := strings.TrimLeft(r.URL.Path, "/")
 
