@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ilya-rusyanov/shrinklator/internal/models"
+	"github.com/ilya-rusyanov/shrinklator/internal/services"
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 
 	"github.com/stretchr/testify/assert"
@@ -38,8 +38,8 @@ func TestShortenHandler(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
-			storage := storage.New()
-			model := models.New(storage)
+			storage := storage.NewInMemory()
+			model := services.NewShortener(storage)
 
 			server := httptest.NewServer(
 				Shorten(model, "http://localhost:8080"))
@@ -104,12 +104,12 @@ func TestExpandHandler(t *testing.T) {
 		},
 	}
 
-	storage := storage.New()
+	storage := storage.NewInMemory()
 	storage.Put("664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru")
 
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
-			model := models.New(storage)
+			model := services.NewShortener(storage)
 			handler := Expand(model)
 
 			req, err := http.NewRequest(
