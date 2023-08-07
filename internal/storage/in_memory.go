@@ -14,7 +14,7 @@ type inMemory struct {
 
 func NewInMemory() *inMemory {
 	res := inMemory{}
-	res.data = map[string]string{}
+	res.data = make(map[string]string)
 	return &res
 }
 
