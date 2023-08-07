@@ -13,9 +13,9 @@ type inMemory struct {
 }
 
 func NewInMemory() *inMemory {
-	res := inMemory{}
-	res.data = make(map[string]string)
-	return &res
+	return &inMemory{
+		data: make(map[string]string),
+	}
 }
 
 func (s *inMemory) Put(id, value string) {
