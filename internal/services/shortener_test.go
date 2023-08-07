@@ -1,4 +1,4 @@
-package models
+package services
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 
 func TestShortener(t *testing.T) {
 	t.Run("short new", func(t *testing.T) {
-		s := NewShortenerService(storage.NewInMemory())
+		s := NewShortener(storage.NewInMemory())
 
 		got := s.Shrink("http://yandex.ru")
 
@@ -20,7 +20,7 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand unknown", func(t *testing.T) {
-		s := NewShortenerService(storage.NewInMemory())
+		s := NewShortener(storage.NewInMemory())
 
 		_, err := s.Expand("a")
 
@@ -30,7 +30,7 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand known", func(t *testing.T) {
-		s := NewShortenerService(storage.NewInMemory())
+		s := NewShortener(storage.NewInMemory())
 
 		url := "http://yandex.ru"
 
@@ -48,7 +48,7 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand unknown", func(t *testing.T) {
-		s := NewShortenerService(storage.NewInMemory())
+		s := NewShortener(storage.NewInMemory())
 
 		_, err := s.Expand("http://google.com")
 

@@ -1,4 +1,4 @@
-package models
+package services
 
 import (
 	"crypto/md5"
@@ -14,23 +14,23 @@ type shortStorage interface {
 	ByID(id string) (string, error)
 }
 
-type ShortenerService struct {
+type Shortener struct {
 	storage shortStorage
 }
 
-func NewShortenerService(storage shortStorage) *ShortenerService {
-	res := &ShortenerService{storage}
+func NewShortener(storage shortStorage) *Shortener {
+	res := &Shortener{storage}
 	return res
 }
 
-func (s *ShortenerService) Shrink(input string) string {
+func (s *Shortener) Shrink(input string) string {
 	hash := md5.Sum([]byte(input))
 	hashStr := hex.EncodeToString(hash[:])
 	s.storage.Put(hashStr, input)
 	return hashStr
 }
 
-func (s *ShortenerService) Expand(input string) (string, error) {
+func (s *Shortener) Expand(input string) (string, error) {
 	url, err := s.storage.ByID(input)
 
 	if err != nil {

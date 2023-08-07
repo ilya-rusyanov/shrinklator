@@ -7,8 +7,8 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/ilya-rusyanov/shrinklator/internal/config"
 	"github.com/ilya-rusyanov/shrinklator/internal/handlers"
-	"github.com/ilya-rusyanov/shrinklator/internal/models"
 	"github.com/ilya-rusyanov/shrinklator/internal/server"
+	"github.com/ilya-rusyanov/shrinklator/internal/services"
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 )
 
@@ -26,13 +26,12 @@ func main() {
 
 	storage := storage.NewInMemory()
 
-	shortenerService := models.NewShortenerService(storage)
+	shortenerService := services.NewShortener(storage)
 
 	shortenHandler := handlers.Shorten(shortenerService, config.BasePath)
 	expandHandler := handlers.Expand(shortenerService)
 
-	router := newRouter(shortenHandler,
-		expandHandler)
+	router := newRouter(shortenHandler, expandHandler)
 
 	err := server.Run(config.ListenAddr, router)
 	if err != nil {
