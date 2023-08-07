@@ -20,12 +20,12 @@ type shrinker interface {
 func NewHandler(s shrinker) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-	r.Post("/", postHandler(s, config.Values.BasePath))
-	r.Get("/{id}", getHandler(s))
+	r.Post("/", shorten(s, config.Values.BasePath))
+	r.Get("/{id}", expand(s))
 	return r
 }
 
-func postHandler(shrinker shrinker, basePath string) http.HandlerFunc {
+func shorten(shrinker shrinker, basePath string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		sb := &strings.Builder{}
 		io.Copy(sb, r.Body)
@@ -42,7 +42,7 @@ func postHandler(shrinker shrinker, basePath string) http.HandlerFunc {
 	}
 }
 
-func getHandler(shrinker shrinker) http.HandlerFunc {
+func expand(shrinker shrinker) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		id := strings.TrimLeft(r.URL.Path, "/")
 

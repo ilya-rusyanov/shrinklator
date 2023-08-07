@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestPostHandler(t *testing.T) {
+func TestShortenHandler(t *testing.T) {
 	type want struct {
 		code     int
 		response string
@@ -42,7 +42,7 @@ func TestPostHandler(t *testing.T) {
 			model := models.New(storage)
 
 			server := httptest.NewServer(
-				postHandler(model, "http://localhost:8080"))
+				shorten(model, "http://localhost:8080"))
 			defer server.Close()
 
 			req, err := http.NewRequest(
@@ -68,7 +68,7 @@ func TestPostHandler(t *testing.T) {
 	}
 }
 
-func TestGetHandler(t *testing.T) {
+func TestExpandHandler(t *testing.T) {
 	type want struct {
 		code             int
 		redirectLocation string
@@ -110,7 +110,7 @@ func TestGetHandler(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
 			model := models.New(storage)
-			handler := getHandler(model)
+			handler := expand(model)
 
 			req, err := http.NewRequest(
 				http.MethodGet,
