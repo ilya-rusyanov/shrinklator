@@ -15,17 +15,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type fakeShrinker struct {
-}
-
-func (s *fakeShrinker) Shrink(string) string {
-	return ""
-}
-
-func (s *fakeShrinker) Expand(string) (string, error) {
-	return "http://yandex.ru", nil
-}
-
 func TestPostHandler(t *testing.T) {
 	type want struct {
 		code     int

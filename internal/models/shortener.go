@@ -9,8 +9,6 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 )
 
-const base = 62
-
 type Shortener struct {
 	storage *storage.Storage
 }
@@ -22,7 +20,6 @@ func (s *Shortener) Shrink(input string) string {
 	return hashStr
 }
 
-var errUnknown = errors.New("unknown")
 var errHashing = errors.New("bad input")
 
 func (s *Shortener) Expand(input string) (string, error) {
