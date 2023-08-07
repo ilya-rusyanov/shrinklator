@@ -12,7 +12,7 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 )
 
-func newRouter(expandHandler http.HandlerFunc, shortenHandler http.HandlerFunc) chi.Router {
+func newRouter(shortenHandler http.HandlerFunc, expandHandler http.HandlerFunc) chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Post("/", shortenHandler)
