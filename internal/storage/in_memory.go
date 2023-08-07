@@ -9,7 +9,7 @@ var errNotFound = errors.New("not found")
 
 type inMemory struct {
 	data  map[string]string
-	mutex sync.Mutex
+	mutex sync.RWMutex
 }
 
 func NewInMemory() *inMemory {
@@ -26,8 +26,8 @@ func (s *inMemory) Put(id, value string) {
 }
 
 func (s *inMemory) ByID(id string) (string, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
 
 	value, ok := s.data[id]
 
