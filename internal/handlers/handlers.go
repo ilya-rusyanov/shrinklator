@@ -10,12 +10,12 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/config"
 )
 
-type Shrinker interface {
+type shrinker interface {
 	Shrink(string) string
 	Expand(string) (string, error)
 }
 
-func NewHandler(s Shrinker) http.Handler {
+func NewHandler(s shrinker) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Post("/", postHandler(s, config.Values.BasePath))
@@ -23,7 +23,7 @@ func NewHandler(s Shrinker) http.Handler {
 	return r
 }
 
-func postHandler(shrinker Shrinker, basePath string) http.HandlerFunc {
+func postHandler(shrinker shrinker, basePath string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		sb := &strings.Builder{}
 		io.Copy(sb, r.Body)
@@ -36,7 +36,7 @@ func postHandler(shrinker Shrinker, basePath string) http.HandlerFunc {
 	}
 }
 
-func getHandler(shrinker Shrinker) http.HandlerFunc {
+func getHandler(shrinker shrinker) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		id := strings.TrimLeft(r.URL.Path, "/")
 
