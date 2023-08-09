@@ -5,13 +5,13 @@ import (
 	"os"
 )
 
-type config struct {
+type Config struct {
 	ListenAddr string
 	BasePath   string
 }
 
-func New() *config {
-	res := config{}
+func New() *Config {
+	res := Config{}
 	flag.StringVar(
 		&res.ListenAddr, "a", ":8080",
 		"address and port to listen on")
@@ -19,7 +19,7 @@ func New() *config {
 	return &res
 }
 
-func (c *config) Parse() {
+func (c *Config) Parse() {
 	flag.Parse()
 
 	if val, ok := os.LookupEnv("SERVER_ADDRESS"); ok {
