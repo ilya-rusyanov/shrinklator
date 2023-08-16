@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
 	"github.com/ilya-rusyanov/shrinklator/internal/config"
 	"github.com/ilya-rusyanov/shrinklator/internal/handlers"
+	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"github.com/ilya-rusyanov/shrinklator/internal/server"
 	"github.com/ilya-rusyanov/shrinklator/internal/services"
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
@@ -14,7 +14,7 @@ import (
 
 func newRouter(shortenHandler http.HandlerFunc, expandHandler http.HandlerFunc) chi.Router {
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
+	r.Use(logger.Middleware)
 	r.Post("/", shortenHandler)
 	r.Get("/{id}", expandHandler)
 	return r
@@ -23,6 +23,8 @@ func newRouter(shortenHandler http.HandlerFunc, expandHandler http.HandlerFunc) 
 func main() {
 	config := config.New()
 	config.Parse()
+
+	logger.Initialize(config.LogLevel)
 
 	storage := storage.NewInMemory()
 

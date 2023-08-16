@@ -8,6 +8,7 @@ import (
 type Config struct {
 	ListenAddr string
 	BasePath   string
+	LogLevel   string
 }
 
 func New() *Config {
@@ -16,6 +17,7 @@ func New() *Config {
 		&res.ListenAddr, "a", ":8080",
 		"address and port to listen on")
 	flag.StringVar(&res.BasePath, "b", "http://localhost:8080", "base path")
+	flag.StringVar(&res.LogLevel, "l", "info", "log level")
 	return &res
 }
 
