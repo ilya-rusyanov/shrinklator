@@ -12,11 +12,13 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 )
 
-func newRouter(shortenHandler http.HandlerFunc, expandHandler http.HandlerFunc) chi.Router {
+func newRouter(shortenHandler http.HandlerFunc, expandHandler http.HandlerFunc,
+	restShortener http.HandlerFunc) chi.Router {
 	r := chi.NewRouter()
 	r.Use(logger.Middleware)
 	r.Post("/", shortenHandler)
 	r.Get("/{id}", expandHandler)
+	r.Post("/api/shorten", restShortener)
 	return r
 }
 
@@ -32,8 +34,10 @@ func main() {
 
 	shortenHandler := handlers.Shorten(shortenerService, config.BasePath)
 	expandHandler := handlers.Expand(shortenerService)
+	restShortenerHandler := handlers.ShortenREST(shortenerService,
+		config.BasePath)
 
-	router := newRouter(shortenHandler, expandHandler)
+	router := newRouter(shortenHandler, expandHandler, restShortenerHandler)
 
 	err := server.Run(config.ListenAddr, router)
 	if err != nil {
