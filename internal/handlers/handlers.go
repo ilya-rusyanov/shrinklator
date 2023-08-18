@@ -71,6 +71,7 @@ func ShortenREST(shrinker shrinker, basePath string) http.HandlerFunc {
 				http.StatusInternalServerError)
 			return
 		}
+		rw.Header().Add("Content-Type", "application/json")
 		rw.WriteHeader(http.StatusCreated)
 		_, err = rw.Write(resultJSON)
 		if err != nil {
