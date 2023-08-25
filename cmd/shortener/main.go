@@ -17,6 +17,7 @@ func newRouter(shortenHandler http.HandlerFunc, expandHandler http.HandlerFunc,
 	restShortener http.HandlerFunc) chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(middleware.Gzip)
 	r.Post("/", shortenHandler)
 	r.Get("/{id}", expandHandler)
 	r.Post("/api/shorten", restShortener)
