@@ -9,14 +9,6 @@ import (
 
 func Gzip(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.Header.Get("Content-Type") {
-		case "application/json":
-		case "text/html":
-		default:
-			next.ServeHTTP(w, r)
-			return
-		}
-
 		// по умолчанию устанавливаем оригинальный http.ResponseWriter как тот,
 		// который будем передавать следующей функции
 		ow := w
