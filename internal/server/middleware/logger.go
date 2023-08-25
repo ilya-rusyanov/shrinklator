@@ -1,8 +1,10 @@
-package logger
+package middleware
 
 import (
 	"net/http"
 	"time"
+
+	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 )
 
 type (
@@ -32,7 +34,7 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.responseData.status = statusCode // захватываем код статуса
 }
 
-func Middleware(next http.Handler) http.Handler {
+func Logger(next http.Handler) http.Handler {
 	logFn := func(rw http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
@@ -48,7 +50,7 @@ func Middleware(next http.Handler) http.Handler {
 
 		duration := time.Since(start)
 
-		sugar := Log.Sugar()
+		sugar := logger.Log.Sugar()
 
 		sugar.Infoln(
 			"uri", r.RequestURI,

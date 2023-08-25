@@ -8,6 +8,7 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/handlers"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"github.com/ilya-rusyanov/shrinklator/internal/server"
+	"github.com/ilya-rusyanov/shrinklator/internal/server/middleware"
 	"github.com/ilya-rusyanov/shrinklator/internal/services"
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 )
@@ -15,7 +16,7 @@ import (
 func newRouter(shortenHandler http.HandlerFunc, expandHandler http.HandlerFunc,
 	restShortener http.HandlerFunc) chi.Router {
 	r := chi.NewRouter()
-	r.Use(logger.Middleware)
+	r.Use(middleware.Logger)
 	r.Post("/", shortenHandler)
 	r.Get("/{id}", expandHandler)
 	r.Post("/api/shorten", restShortener)
