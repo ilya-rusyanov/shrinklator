@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
+	"go.uber.org/zap"
 )
 
 type (
@@ -50,14 +51,20 @@ func Logger(next http.Handler) http.Handler {
 
 		duration := time.Since(start)
 
-		sugar := logger.Log.Sugar()
+		contentType := r.Header.Get("Content-Type")
+		acceptEncoding := r.Header.Get("Accept-Encoding")
+		contentEncoding := r.Header.Get("Content-Encoding")
 
-		sugar.Infoln(
-			"uri", r.RequestURI,
-			"method", r.Method,
-			"status", responseData.status, // получаем перехваченный код статуса ответа
-			"duration", duration,
-			"size", responseData.size, // получаем перехваченный размер ответа
+		logger.Log.Info(
+			"recieved request",
+			zap.String("uri", r.RequestURI),
+			zap.String("method", r.Method),
+			zap.Int("status", responseData.status), // получаем перехваченный код статуса ответа
+			zap.Int64("duration", int64(duration)),
+			zap.Int("size", responseData.size), // получаем перехваченный размер ответа
+			zap.String("content-type", contentType),
+			zap.String("content-encoding", contentEncoding),
+			zap.String("accept-encoding", acceptEncoding),
 		)
 	}
 	return http.HandlerFunc(logFn)
