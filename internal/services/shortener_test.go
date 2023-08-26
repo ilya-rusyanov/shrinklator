@@ -4,23 +4,24 @@ import (
 	"testing"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestShortener(t *testing.T) {
 	t.Run("short new", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory())
+		s := NewShortener(storage.NewInMemory(makeValues(t)))
 
-		got := s.Shrink("http://yandex.ru")
+		got, err := s.Shrink("http://yandex.ru")
+		require.NoError(t, err)
 
 		want := "664b8054bac1af66baafa7a01acd15ee"
 
-		if got != want {
-			t.Errorf("got %q want %q", got, want)
-		}
+		assert.Equal(t, want, got)
 	})
 
 	t.Run("expand unknown", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory())
+		s := NewShortener(storage.NewInMemory(makeValues(t)))
 
 		_, err := s.Expand("a")
 
@@ -30,30 +31,28 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand known", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory())
+		s := NewShortener(storage.NewInMemory(makeValues(t)))
 
 		url := "http://yandex.ru"
 
-		short := s.Shrink(url)
+		short, err := s.Shrink(url)
+		require.NoError(t, err)
 
 		got, err := s.Expand(short)
+		require.NoError(t, err)
 
-		if err != nil {
-			t.Fatal("must be valid operation")
-		}
-
-		if got != url {
-			t.Errorf("got %q want %q", got, url)
-		}
+		assert.Equal(t, url, got)
 	})
 
 	t.Run("expand unknown", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory())
+		s := NewShortener(storage.NewInMemory(makeValues(t)))
 
 		_, err := s.Expand("http://google.com")
 
-		if err == nil {
-			t.Errorf("want error, got nil")
-		}
+		require.Error(t, err)
 	})
+}
+
+func makeValues(tb testing.TB) map[string]string {
+	return make(map[string]string)
 }
