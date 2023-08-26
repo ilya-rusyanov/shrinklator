@@ -32,7 +32,9 @@ func main() {
 
 	inMemory := storage.NewInMemory()
 
-	shortenerService := services.NewShortener(inMemory)
+	hybridStorage := storage.NewHybrid(inMemory)
+
+	shortenerService := services.NewShortener(hybridStorage)
 
 	shortenHandler := handlers.Shorten(shortenerService, config.BasePath)
 	expandHandler := handlers.Expand(shortenerService)
