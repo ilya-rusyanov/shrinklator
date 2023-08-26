@@ -32,7 +32,9 @@ func main() {
 
 	inMemory := storage.NewInMemory()
 
-	hybridStorage := storage.NewHybrid(inMemory)
+	persistence := storage.NewNullPersistence()
+
+	hybridStorage := storage.NewHybrid(inMemory, persistence)
 
 	shortenerService := services.NewShortener(hybridStorage)
 
