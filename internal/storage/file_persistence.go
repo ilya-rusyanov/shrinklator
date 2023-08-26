@@ -73,7 +73,7 @@ func (p *FilePersistence) ReadAll() (values map[string]string, err error) {
 
 	reader := bufio.NewReader(p.file)
 	data := make([]byte, 0)
-	for data, err = reader.ReadBytes('\n'); errors.Is(err, io.EOF); data, err = reader.ReadBytes('\n') {
+	for data, err = reader.ReadBytes('\n'); !errors.Is(err, io.EOF); data, err = reader.ReadBytes('\n') {
 		if err != nil {
 			err = fmt.Errorf("error reading line: %w", err)
 			return
