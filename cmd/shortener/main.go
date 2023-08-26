@@ -32,7 +32,10 @@ func main() {
 
 	inMemory := storage.NewInMemory()
 
-	persistence := storage.NewNullPersistence()
+	persistence := storage.Persistence(storage.NewNullPersistence())
+	if config.StoreInFile {
+		persistence = storage.NewFilePersistence(config.FileStoragePath)
+	}
 
 	hybridStorage := storage.NewHybrid(inMemory, persistence)
 

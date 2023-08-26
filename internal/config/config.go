@@ -6,9 +6,11 @@ import (
 )
 
 type Config struct {
-	ListenAddr string
-	BasePath   string
-	LogLevel   string
+	ListenAddr      string
+	BasePath        string
+	LogLevel        string
+	FileStoragePath string
+	StoreInFile     bool
 }
 
 func New() *Config {
@@ -18,6 +20,8 @@ func New() *Config {
 		"address and port to listen on")
 	flag.StringVar(&res.BasePath, "b", "http://localhost:8080", "base path")
 	flag.StringVar(&res.LogLevel, "l", "info", "log level")
+	flag.StringVar(&res.FileStoragePath, "f", "/tmp/short-url-db.json",
+		"filepath to simple database")
 	return &res
 }
 
@@ -30,5 +34,13 @@ func (c *Config) Parse() {
 
 	if val, ok := os.LookupEnv("BASE_URL"); ok {
 		c.BasePath = val
+	}
+
+	if val, ok := os.LookupEnv("FILE_STORAGE_PATH"); ok {
+		c.FileStoragePath = val
+	}
+
+	if c.FileStoragePath != "" {
+		c.StoreInFile = true
 	}
 }
