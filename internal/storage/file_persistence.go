@@ -38,7 +38,7 @@ func NewFilePersistence(filePath string) (*FilePersistence, error) {
 		writer: bufio.NewWriter(file),
 	}
 
-	logger.Log.Info("created file persistence",
+	logger.Log.Info("opened file persistence",
 		zap.String("file path", filePath))
 	return res, nil
 }
