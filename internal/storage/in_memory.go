@@ -21,7 +21,7 @@ func NewInMemory(initialValues map[string]string) *inMemory {
 	}
 }
 
-func (s *inMemory) Put(id, value string) {
+func (s *inMemory) Put(id, value string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -29,6 +29,8 @@ func (s *inMemory) Put(id, value string) {
 		zap.String("value", value))
 
 	s.data[id] = value
+
+	return nil
 }
 
 func (s *inMemory) ByID(id string) (string, error) {

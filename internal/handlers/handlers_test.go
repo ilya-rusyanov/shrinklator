@@ -38,7 +38,8 @@ func TestShortenHandler(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
-			storage := storage.NewInMemory()
+			values := make(map[string]string)
+			storage := storage.NewInMemory(values)
 			model := services.NewShortener(storage)
 
 			server := httptest.NewServer(
@@ -104,7 +105,8 @@ func TestExpandHandler(t *testing.T) {
 		},
 	}
 
-	storage := storage.NewInMemory()
+	values := make(map[string]string)
+	storage := storage.NewInMemory(values)
 	storage.Put("664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru")
 
 	for _, test := range tests {
@@ -162,7 +164,8 @@ func TestShortenRESThandler(t *testing.T) {
 
 	for _, testCase := range tests {
 		t.Run(testCase.name, func(t *testing.T) {
-			storage := storage.NewInMemory()
+			values := make(map[string]string)
+			storage := storage.NewInMemory(values)
 			service := services.NewShortener(storage)
 			handler := ShortenREST(service, "http://localhost")
 
