@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
@@ -14,7 +13,7 @@ import (
 )
 
 type shrinker interface {
-	Shrink(string) string
+	Shrink(string) (string, error)
 	Expand(string) (string, error)
 }
 
@@ -22,16 +21,19 @@ func Shorten(shrinker shrinker, basePath string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		sb := &strings.Builder{}
 		io.Copy(sb, r.Body)
-		short := shrinker.Shrink(sb.String())
+		short, err := shrinker.Shrink(sb.String())
+
+		if err != nil {
+			logger.Log.Error("error shortening",
+				zap.String("message", err.Error()))
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		result := basePath + "/" + short
 
 		rw.WriteHeader(http.StatusCreated)
-		_, err := io.WriteString(rw, result)
-		if err != nil {
-			rw.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(os.Stderr, "unable to write response: %v", err)
-		}
+		respondWithString(rw, result)
 	}
 }
 
@@ -45,36 +47,46 @@ func ShortenREST(shrinker shrinker, basePath string) http.HandlerFunc {
 			result = make(map[string]string, 1)
 		)
 
-		_, err := buf.ReadFrom(r.Body)
-
-		if err != nil {
+		if _, err := buf.ReadFrom(r.Body); err != nil {
+			logger.Log.Error("cannot read request body",
+				zap.String("message", err.Error()))
 			http.Error(rw,
 				fmt.Sprintf("error reading request body: %v", err),
 				http.StatusInternalServerError)
 			return
 		}
 
-		err = json.Unmarshal(buf.Bytes(), &shortenRequest)
-
-		if err != nil {
+		if err := json.Unmarshal(buf.Bytes(), &shortenRequest); err != nil {
 			http.Error(rw, err.Error(),
 				http.StatusBadRequest)
+			logger.Log.Error("error marshaling JSON",
+				zap.String("message", err.Error()))
 			return
 		}
 
-		result["result"] = basePath + "/" + shrinker.Shrink(shortenRequest.URL)
+		short, err := shrinker.Shrink(shortenRequest.URL)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			logger.Log.Error("error shortening URL",
+				zap.String("message", err.Error()))
+			return
+		}
+
+		result["result"] = basePath + "/" + short
 
 		resultJSON, err := json.Marshal(result)
 		if err != nil {
 			http.Error(rw,
 				fmt.Sprintf("error serializing response: %v", err),
 				http.StatusInternalServerError)
+			logger.Log.Error("error marshaling JSON",
+				zap.String("message", err.Error()))
 			return
 		}
 		rw.Header().Add("Content-Type", "application/json")
 		rw.WriteHeader(http.StatusCreated)
-		_, err = rw.Write(resultJSON)
-		if err != nil {
+
+		if _, err = rw.Write(resultJSON); err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			logger.Log.Error("unable to write response",
 				zap.String("error", err.Error()))
@@ -95,5 +107,13 @@ func Expand(shrinker shrinker) http.HandlerFunc {
 
 		rw.Header().Add("Location", url)
 		rw.WriteHeader(http.StatusTemporaryRedirect)
+	}
+}
+
+func respondWithString(rw http.ResponseWriter, text string) {
+	if _, err := io.WriteString(rw, text); err != nil {
+		logger.Log.Error("error writing response",
+			zap.String("message", err.Error()))
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
 	}
 }

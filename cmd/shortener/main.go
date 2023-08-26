@@ -14,8 +14,9 @@ import (
 )
 
 type Persistence interface {
-	Append(short, long string)
+	Append(short, long string) error
 	ReadAll() (values map[string]string, err error)
+	Close()
 }
 
 func newRouter(shortenHandler http.HandlerFunc, expandHandler http.HandlerFunc,
@@ -68,4 +69,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	persistence.Close()
 }
