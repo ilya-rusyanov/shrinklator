@@ -90,6 +90,9 @@ func (p *FilePersistence) ReadAll() (values map[string]string, err error) {
 		p.lastID++
 	}
 
+	// clear EOF error
+	err = nil
+
 	return
 }
 
