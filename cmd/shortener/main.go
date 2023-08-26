@@ -13,6 +13,11 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 )
 
+type Persistence interface {
+	Append(short, long string)
+	ReadAll() (values map[string]string, err error)
+}
+
 func newRouter(shortenHandler http.HandlerFunc, expandHandler http.HandlerFunc,
 	restShortener http.HandlerFunc) chi.Router {
 	r := chi.NewRouter()
@@ -30,12 +35,14 @@ func main() {
 
 	logger.Initialize(config.LogLevel)
 
-	inMemory := storage.NewInMemory()
-
-	persistence := storage.Persistence(storage.NewNullPersistence())
+	persistence := Persistence(storage.NewNullPersistence())
 	if config.StoreInFile {
 		persistence = storage.NewFilePersistence(config.FileStoragePath)
 	}
+
+	values, err := persistence.ReadAll()
+
+	inMemory := storage.NewInMemory(values)
 
 	hybridStorage := storage.NewHybrid(inMemory, persistence)
 
@@ -48,7 +55,7 @@ func main() {
 
 	router := newRouter(shortenHandler, expandHandler, restShortenerHandler)
 
-	err := server.Run(config.ListenAddr, router)
+	err = server.Run(config.ListenAddr, router)
 	if err != nil {
 		panic(err)
 	}

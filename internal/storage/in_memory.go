@@ -15,9 +15,9 @@ type inMemory struct {
 	mutex sync.RWMutex
 }
 
-func NewInMemory() *inMemory {
+func NewInMemory(initialValues map[string]string) *inMemory {
 	return &inMemory{
-		data: make(map[string]string),
+		data: initialValues,
 	}
 }
 
