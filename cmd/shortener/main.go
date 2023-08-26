@@ -37,10 +37,19 @@ func main() {
 
 	persistence := Persistence(storage.NewNullPersistence())
 	if config.StoreInFile {
-		persistence = storage.NewFilePersistence(config.FileStoragePath)
+		var err error
+		persistence, err =
+			storage.NewFilePersistence(config.FileStoragePath)
+
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	values, err := persistence.ReadAll()
+	if err != nil {
+		panic(err)
+	}
 
 	inMemory := storage.NewInMemory(values)
 
