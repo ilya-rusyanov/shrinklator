@@ -30,9 +30,9 @@ func main() {
 
 	logger.Initialize(config.LogLevel)
 
-	storage := storage.NewInMemory()
+	inMemory := storage.NewInMemory()
 
-	shortenerService := services.NewShortener(storage)
+	shortenerService := services.NewShortener(inMemory)
 
 	shortenHandler := handlers.Shorten(shortenerService, config.BasePath)
 	expandHandler := handlers.Expand(shortenerService)
