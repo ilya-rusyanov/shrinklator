@@ -16,7 +16,6 @@ import (
 type Persistence interface {
 	Append(short, long string) error
 	ReadAll() (values map[string]string, err error)
-	Close()
 }
 
 func newRouter(shortenHandler http.HandlerFunc, expandHandler http.HandlerFunc,
@@ -38,13 +37,13 @@ func main() {
 
 	persistence := Persistence(storage.NewNullPersistence())
 	if config.StoreInFile {
-		var err error
-		persistence, err =
-			storage.NewFilePersistence(config.FileStoragePath)
-
+		file, err := storage.NewFile(config.FileStoragePath)
 		if err != nil {
 			panic(err)
 		}
+		defer file.Close()
+
+		persistence = storage.NewRWpersistence(file, file)
 	}
 
 	values, err := persistence.ReadAll()
@@ -69,5 +68,4 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	persistence.Close()
 }

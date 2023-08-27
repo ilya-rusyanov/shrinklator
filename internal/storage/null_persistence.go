@@ -15,6 +15,3 @@ func (p *NullPersistence) ReadAll() (values map[string]string, err error) {
 	values = make(map[string]string)
 	return
 }
-
-func (p *NullPersistence) Close() {
-}
