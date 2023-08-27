@@ -58,8 +58,8 @@ func (p *RWpersistence) ReadAll() (values map[string]string, err error) {
 	values = make(map[string]string)
 
 	reader := bufio.NewReader(p.reader)
-	data := make([]byte, 0)
-	for data, err = reader.ReadBytes('\n'); !errors.Is(err, io.EOF); data, err = reader.ReadBytes('\n') {
+	data, err := reader.ReadBytes('\n')
+	for ; !errors.Is(err, io.EOF); data, err = reader.ReadBytes('\n') {
 		if err != nil {
 			err = fmt.Errorf("error reading line: %w", err)
 			return
