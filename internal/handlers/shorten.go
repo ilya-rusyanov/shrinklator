@@ -9,11 +9,23 @@ import (
 	"go.uber.org/zap"
 )
 
-func Shorten(shrinker shrinker, basePath string) http.HandlerFunc {
+type Shorten struct {
+	shrinker shrinker
+	basePath string
+}
+
+func NewShorten(shrinker shrinker, basePath string) *Shorten {
+	return &Shorten{
+		shrinker: shrinker,
+		basePath: basePath,
+	}
+}
+
+func (s *Shorten) Handler() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		sb := &strings.Builder{}
 		io.Copy(sb, r.Body)
-		short, err := shrinker.Shrink(sb.String())
+		short, err := s.shrinker.Shrink(sb.String())
 
 		if err != nil {
 			logger.Log.Error("error shortening",
@@ -22,7 +34,7 @@ func Shorten(shrinker shrinker, basePath string) http.HandlerFunc {
 			return
 		}
 
-		result := basePath + "/" + short
+		result := s.basePath + "/" + short
 
 		rw.WriteHeader(http.StatusCreated)
 		respondWithString(rw, result)

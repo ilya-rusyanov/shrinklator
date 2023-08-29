@@ -57,12 +57,13 @@ func main() {
 
 	shortenerService := services.NewShortener(hybridStorage)
 
-	shortenHandler := handlers.Shorten(shortenerService, config.BasePath)
+	shortenHandler := handlers.NewShorten(shortenerService, config.BasePath)
 	expandHandler := handlers.Expand(shortenerService)
 	restShortenerHandler := handlers.ShortenREST(shortenerService,
 		config.BasePath)
 
-	router := newRouter(shortenHandler, expandHandler, restShortenerHandler)
+	router := newRouter(shortenHandler.Handler(),
+		expandHandler, restShortenerHandler)
 
 	err = server.Run(config.ListenAddr, router)
 	if err != nil {
