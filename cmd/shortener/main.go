@@ -59,11 +59,11 @@ func main() {
 
 	shortenHandler := handlers.NewShorten(shortenerService, config.BasePath)
 	expandHandler := handlers.NewExpand(shortenerService)
-	restShortenerHandler := handlers.ShortenREST(shortenerService,
+	restShortenerHandler := handlers.NewShortenREST(shortenerService,
 		config.BasePath)
 
 	router := newRouter(shortenHandler.Handler(),
-		expandHandler.Handler(), restShortenerHandler)
+		expandHandler.Handler(), restShortenerHandler.Handler())
 
 	err = server.Run(config.ListenAddr, router)
 	if err != nil {

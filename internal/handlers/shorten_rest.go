@@ -10,7 +10,19 @@ import (
 	"go.uber.org/zap"
 )
 
-func ShortenREST(shrinker shrinker, basePath string) http.HandlerFunc {
+type ShortenREST struct {
+	shrinker shrinker
+	basePath string
+}
+
+func NewShortenREST(shrinker shrinker, basePath string) *ShortenREST {
+	return &ShortenREST{
+		shrinker: shrinker,
+		basePath: basePath,
+	}
+}
+
+func (s *ShortenREST) Handler() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		buf := bytes.Buffer{}
 		var (
@@ -37,7 +49,7 @@ func ShortenREST(shrinker shrinker, basePath string) http.HandlerFunc {
 			return
 		}
 
-		short, err := shrinker.Shrink(shortenRequest.URL)
+		short, err := s.shrinker.Shrink(shortenRequest.URL)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			logger.Log.Error("error shortening URL",
@@ -45,7 +57,7 @@ func ShortenREST(shrinker shrinker, basePath string) http.HandlerFunc {
 			return
 		}
 
-		result["result"] = basePath + "/" + short
+		result["result"] = s.basePath + "/" + short
 
 		resultJSON, err := json.Marshal(result)
 		if err != nil {
