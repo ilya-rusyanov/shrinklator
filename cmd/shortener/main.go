@@ -47,7 +47,7 @@ func main() {
 		}
 		defer file.Close()
 
-		persistence = storage.NewRWpersistence(file, file)
+		persistence = storage.NewRWPersistence(file, file)
 	}
 
 	values, err := persistence.ReadAll()

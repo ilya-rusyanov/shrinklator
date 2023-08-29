@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRWpersistence(t *testing.T) {
+func TestRWPersistence(t *testing.T) {
 	t.Run("appending", func(t *testing.T) {
 		buf := bytes.Buffer{}
-		p := NewRWpersistence(&buf, &buf)
+		p := NewRWPersistence(&buf, &buf)
 		p.Append("4rSPg8ap", "http://yandex.ru")
 		p.Append("edVPg3ks", "http://ya.ru")
 		assert.Equal(t,
@@ -30,7 +30,7 @@ func TestRWpersistence(t *testing.T) {
 `))
 		require.NoError(t, err)
 
-		p := NewRWpersistence(&buf, &buf)
+		p := NewRWPersistence(&buf, &buf)
 		values, err := p.ReadAll()
 		require.NoError(t, err)
 

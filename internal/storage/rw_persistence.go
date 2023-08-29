@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-type RWpersistence struct {
+type RWPersistence struct {
 	reader io.Reader
 	writer *bufio.Writer
 	lastID int
@@ -21,16 +21,16 @@ type dto struct {
 	Long  string `json:"original_url"`
 }
 
-func NewRWpersistence(reader io.Reader, writer io.Writer) *RWpersistence {
+func NewRWPersistence(reader io.Reader, writer io.Writer) *RWPersistence {
 	w := bufio.NewWriter(writer)
-	return &RWpersistence{
+	return &RWPersistence{
 		reader: reader,
 		writer: w,
 		lastID: 1,
 	}
 }
 
-func (p *RWpersistence) Append(short string, long string) error {
+func (p *RWPersistence) Append(short string, long string) error {
 	payload := dto{Short: short, Long: long, ID: strconv.Itoa(p.lastID)}
 	encoded, err := json.Marshal(&payload)
 	if err != nil {
@@ -54,7 +54,7 @@ func (p *RWpersistence) Append(short string, long string) error {
 	return nil
 }
 
-func (p *RWpersistence) ReadAll() (values map[string]string, err error) {
+func (p *RWPersistence) ReadAll() (values map[string]string, err error) {
 	values = make(map[string]string)
 
 	reader := bufio.NewReader(p.reader)
