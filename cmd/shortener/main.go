@@ -13,7 +13,7 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 )
 
-type Persistence interface {
+type persistence interface {
 	Append(short, long string) error
 	ReadAll() (values map[string]string, err error)
 }
@@ -39,7 +39,7 @@ func main() {
 		panic(err)
 	}
 
-	persistence := Persistence(storage.NewNullPersistence())
+	persistence := persistence(storage.NewNullPersistence())
 	if config.StoreInFile {
 		file, err := storage.NewFile(log, config.FileStoragePath)
 		if err != nil {
