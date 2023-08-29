@@ -12,12 +12,14 @@ import (
 type Shorten struct {
 	shrinker shrinker
 	basePath string
+	log      *logger.Log
 }
 
-func NewShorten(shrinker shrinker, basePath string) *Shorten {
+func NewShorten(log *logger.Log, shrinker shrinker, basePath string) *Shorten {
 	return &Shorten{
 		shrinker: shrinker,
 		basePath: basePath,
+		log:      log,
 	}
 }
 
@@ -28,7 +30,7 @@ func (s *Shorten) Handler() http.HandlerFunc {
 		short, err := s.shrinker.Shrink(sb.String())
 
 		if err != nil {
-			logger.Log.Error("error shortening",
+			s.log.Error("error shortening",
 				zap.String("message", err.Error()))
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
@@ -37,13 +39,13 @@ func (s *Shorten) Handler() http.HandlerFunc {
 		result := s.basePath + "/" + short
 
 		rw.WriteHeader(http.StatusCreated)
-		respondWithString(rw, result)
+		s.respondWithString(rw, result)
 	}
 }
 
-func respondWithString(rw http.ResponseWriter, text string) {
+func (s *Shorten) respondWithString(rw http.ResponseWriter, text string) {
 	if _, err := io.WriteString(rw, text); err != nil {
-		logger.Log.Error("error writing response",
+		s.log.Error("error writing response",
 			zap.String("message", err.Error()))
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 	}

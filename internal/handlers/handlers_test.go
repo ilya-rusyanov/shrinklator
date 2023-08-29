@@ -10,6 +10,7 @@ import (
 
 	"github.com/ilya-rusyanov/shrinklator/internal/services"
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
+	"go.uber.org/zap"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -39,10 +40,12 @@ func TestShortenHandler(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
 			values := make(map[string]string)
-			storage := storage.NewInMemory(values)
+			noLog := zap.NewNop()
+			storage := storage.NewInMemory(noLog, values)
 			model := services.NewShortener(storage)
 
-			shortenHandler := NewShorten(model, "http://localhost:8080")
+			shortenHandler := NewShorten(noLog, model,
+				"http://localhost:8080")
 
 			server := httptest.NewServer(shortenHandler.Handler())
 			defer server.Close()

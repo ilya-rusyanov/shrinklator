@@ -4,17 +4,13 @@ import (
 	"go.uber.org/zap"
 )
 
-// Log будет доступен всему коду как синглтон.
-// Никакой код навыка, кроме функции InitLogger, не должен модифицировать эту переменную.
-// По умолчанию установлен no-op-логер, который не выводит никаких сообщений.
-var Log *zap.Logger = zap.NewNop()
+type Log = zap.Logger
 
-// Initialize инициализирует синглтон логера с необходимым уровнем логирования.
-func Initialize(level string) error {
+func NewLogger(level string) (*Log, error) {
 	// преобразуем текстовый уровень логирования в zap.AtomicLevel
 	lvl, err := zap.ParseAtomicLevel(level)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// создаём новую конфигурацию логера
 	cfg := zap.NewProductionConfig()
@@ -23,9 +19,7 @@ func Initialize(level string) error {
 	// создаём логер на основе конфигурации
 	zl, err := cfg.Build()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	// устанавливаем синглтон
-	Log = zl
-	return nil
+	return zl, nil
 }

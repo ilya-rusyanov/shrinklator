@@ -13,12 +13,14 @@ import (
 type ShortenREST struct {
 	shrinker shrinker
 	basePath string
+	log      *logger.Log
 }
 
-func NewShortenREST(shrinker shrinker, basePath string) *ShortenREST {
+func NewShortenREST(log *logger.Log, shrinker shrinker, basePath string) *ShortenREST {
 	return &ShortenREST{
 		shrinker: shrinker,
 		basePath: basePath,
+		log:      log,
 	}
 }
 
@@ -33,7 +35,7 @@ func (s *ShortenREST) Handler() http.HandlerFunc {
 		)
 
 		if _, err := buf.ReadFrom(r.Body); err != nil {
-			logger.Log.Error("cannot read request body",
+			s.log.Error("cannot read request body",
 				zap.String("message", err.Error()))
 			http.Error(rw,
 				fmt.Sprintf("error reading request body: %v", err),
@@ -44,7 +46,7 @@ func (s *ShortenREST) Handler() http.HandlerFunc {
 		if err := json.Unmarshal(buf.Bytes(), &shortenRequest); err != nil {
 			http.Error(rw, err.Error(),
 				http.StatusBadRequest)
-			logger.Log.Error("error marshaling JSON",
+			s.log.Error("error marshaling JSON",
 				zap.String("message", err.Error()))
 			return
 		}
@@ -52,7 +54,7 @@ func (s *ShortenREST) Handler() http.HandlerFunc {
 		short, err := s.shrinker.Shrink(shortenRequest.URL)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
-			logger.Log.Error("error shortening URL",
+			s.log.Error("error shortening URL",
 				zap.String("message", err.Error()))
 			return
 		}
@@ -64,7 +66,7 @@ func (s *ShortenREST) Handler() http.HandlerFunc {
 			http.Error(rw,
 				fmt.Sprintf("error serializing response: %v", err),
 				http.StatusInternalServerError)
-			logger.Log.Error("error marshaling JSON",
+			s.log.Error("error marshaling JSON",
 				zap.String("message", err.Error()))
 			return
 		}
@@ -73,7 +75,7 @@ func (s *ShortenREST) Handler() http.HandlerFunc {
 
 		if _, err = rw.Write(resultJSON); err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
-			logger.Log.Error("unable to write response",
+			s.log.Error("unable to write response",
 				zap.String("error", err.Error()))
 		}
 	}

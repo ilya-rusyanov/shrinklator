@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewFile(path string) (*os.File, error) {
+func NewFile(log *logger.Log, path string) (*os.File, error) {
 	file, err := os.OpenFile(path,
 		os.O_RDWR|os.O_APPEND|os.O_CREATE,
 		0640)
@@ -17,7 +17,7 @@ func NewFile(path string) (*os.File, error) {
 		return nil, fmt.Errorf("error opening file: %w", err)
 	}
 
-	logger.Log.Info("opened file persistence",
+	log.Info("opened file persistence",
 		zap.String("file path", path))
 	return file, nil
 }

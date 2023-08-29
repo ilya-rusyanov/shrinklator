@@ -9,8 +9,10 @@ import (
 
 	"github.com/ilya-rusyanov/shrinklator/internal/services"
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func TestShortenRESThandler(t *testing.T) {
@@ -45,9 +47,10 @@ func TestShortenRESThandler(t *testing.T) {
 	for _, testCase := range tests {
 		t.Run(testCase.name, func(t *testing.T) {
 			values := make(map[string]string)
-			storage := storage.NewInMemory(values)
+			noLog := zap.NewNop()
+			storage := storage.NewInMemory(noLog, values)
 			service := services.NewShortener(storage)
-			handler := NewShortenREST(service, "http://localhost")
+			handler := NewShortenREST(noLog, service, "http://localhost")
 
 			req, err := http.NewRequest(
 				http.MethodPost,

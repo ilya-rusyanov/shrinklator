@@ -7,8 +7,10 @@ import (
 
 	"github.com/ilya-rusyanov/shrinklator/internal/services"
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func TestExpandHandler(t *testing.T) {
@@ -48,7 +50,7 @@ func TestExpandHandler(t *testing.T) {
 	}
 
 	values := make(map[string]string)
-	storage := storage.NewInMemory(values)
+	storage := storage.NewInMemory(zap.NewNop(), values)
 	storage.Put("664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru")
 
 	for _, test := range tests {

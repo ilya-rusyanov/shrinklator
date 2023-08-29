@@ -6,11 +6,14 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func TestShortener(t *testing.T) {
+	noLog := zap.NewNop()
+
 	t.Run("short new", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory(makeValues(t)))
+		s := NewShortener(storage.NewInMemory(noLog, makeValues(t)))
 
 		got, err := s.Shrink("http://yandex.ru")
 		require.NoError(t, err)
@@ -21,7 +24,7 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand unknown", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory(makeValues(t)))
+		s := NewShortener(storage.NewInMemory(noLog, makeValues(t)))
 
 		_, err := s.Expand("a")
 
@@ -31,7 +34,7 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand known", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory(makeValues(t)))
+		s := NewShortener(storage.NewInMemory(noLog, makeValues(t)))
 
 		url := "http://yandex.ru"
 
@@ -45,7 +48,7 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand unknown", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory(makeValues(t)))
+		s := NewShortener(storage.NewInMemory(noLog, makeValues(t)))
 
 		_, err := s.Expand("http://google.com")
 

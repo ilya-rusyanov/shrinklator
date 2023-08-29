@@ -18,10 +18,11 @@ type Persistence interface {
 	ReadAll() (values map[string]string, err error)
 }
 
-func newRouter(shortenHandler http.HandlerFunc, expandHandler http.HandlerFunc,
+func newRouter(log *logger.Log, shortenHandler http.HandlerFunc,
+	expandHandler http.HandlerFunc,
 	restShortener http.HandlerFunc) chi.Router {
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
+	r.Use(middleware.NewLogger(log).Middleware())
 	r.Use(middleware.Gzip)
 	r.Post("/", shortenHandler)
 	r.Get("/{id}", expandHandler)
@@ -33,11 +34,14 @@ func main() {
 	config := config.New()
 	config.Parse()
 
-	logger.Initialize(config.LogLevel)
+	log, err := logger.NewLogger(config.LogLevel)
+	if err != nil {
+		panic(err)
+	}
 
 	persistence := Persistence(storage.NewNullPersistence())
 	if config.StoreInFile {
-		file, err := storage.NewFile(config.FileStoragePath)
+		file, err := storage.NewFile(log, config.FileStoragePath)
 		if err != nil {
 			panic(err)
 		}
@@ -51,19 +55,22 @@ func main() {
 		panic(err)
 	}
 
-	inMemory := storage.NewInMemory(values)
+	inMemory := storage.NewInMemory(log, values)
 
 	hybridStorage := storage.NewHybrid(inMemory, persistence)
 
 	shortenerService := services.NewShortener(hybridStorage)
 
-	shortenHandler := handlers.NewShorten(shortenerService, config.BasePath)
+	shortenHandler := handlers.NewShorten(log, shortenerService, config.BasePath)
 	expandHandler := handlers.NewExpand(shortenerService)
-	restShortenerHandler := handlers.NewShortenREST(shortenerService,
+	restShortenerHandler := handlers.NewShortenREST(log, shortenerService,
 		config.BasePath)
 
-	router := newRouter(shortenHandler.Handler(),
-		expandHandler.Handler(), restShortenerHandler.Handler())
+	router := newRouter(
+		log,
+		shortenHandler.Handler(),
+		expandHandler.Handler(),
+		restShortenerHandler.Handler())
 
 	err = server.Run(config.ListenAddr, router)
 	if err != nil {
