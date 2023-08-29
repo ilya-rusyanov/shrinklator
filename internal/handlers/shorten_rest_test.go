@@ -46,9 +46,8 @@ func TestShortenRESThandler(t *testing.T) {
 
 	for _, testCase := range tests {
 		t.Run(testCase.name, func(t *testing.T) {
-			values := make(map[string]string)
 			noLog := zap.NewNop()
-			storage := storage.NewInMemory(noLog, values)
+			storage := storage.NewInMemory(noLog)
 			service := services.NewShortener(storage)
 			handler := NewShortenREST(noLog, service, "http://localhost")
 

@@ -49,8 +49,7 @@ func TestExpandHandler(t *testing.T) {
 		},
 	}
 
-	values := make(map[string]string)
-	storage := storage.NewInMemory(zap.NewNop(), values)
+	storage := storage.NewInMemory(zap.NewNop())
 	storage.Put("664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru")
 
 	for _, test := range tests {

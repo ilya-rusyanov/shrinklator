@@ -1,14 +1,11 @@
 package storage
 
 import (
-	"errors"
 	"sync"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"go.uber.org/zap"
 )
-
-var errNotFound = errors.New("not found")
 
 type inMemory struct {
 	data  map[string]string
@@ -16,9 +13,9 @@ type inMemory struct {
 	log   *logger.Log
 }
 
-func NewInMemory(log *logger.Log, initialValues map[string]string) *inMemory {
+func NewInMemory(log *logger.Log) *inMemory {
 	return &inMemory{
-		data: initialValues,
+		data: make(map[string]string),
 		log:  log,
 	}
 }
@@ -43,7 +40,7 @@ func (s *inMemory) ByID(id string) (string, error) {
 
 	if !ok {
 		s.log.Info("cannot find record", zap.String("id", id))
-		return "", errNotFound
+		return "", ErrNotFound
 	}
 
 	s.log.Info("successuflly found record", zap.String("id", id),

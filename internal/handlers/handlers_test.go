@@ -39,9 +39,8 @@ func TestShortenHandler(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
-			values := make(map[string]string)
 			noLog := zap.NewNop()
-			storage := storage.NewInMemory(noLog, values)
+			storage := storage.NewInMemory(noLog)
 			model := services.NewShortener(storage)
 
 			shortenHandler := NewShorten(noLog, model,

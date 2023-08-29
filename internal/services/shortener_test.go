@@ -13,7 +13,7 @@ func TestShortener(t *testing.T) {
 	noLog := zap.NewNop()
 
 	t.Run("short new", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory(noLog, makeValues(t)))
+		s := NewShortener(storage.NewInMemory(noLog))
 
 		got, err := s.Shrink("http://yandex.ru")
 		require.NoError(t, err)
@@ -24,7 +24,7 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand unknown", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory(noLog, makeValues(t)))
+		s := NewShortener(storage.NewInMemory(noLog))
 
 		_, err := s.Expand("a")
 
@@ -34,7 +34,7 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand known", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory(noLog, makeValues(t)))
+		s := NewShortener(storage.NewInMemory(noLog))
 
 		url := "http://yandex.ru"
 
@@ -48,14 +48,10 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand unknown", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory(noLog, makeValues(t)))
+		s := NewShortener(storage.NewInMemory(noLog))
 
 		_, err := s.Expand("http://google.com")
 
 		require.Error(t, err)
 	})
-}
-
-func makeValues(tb testing.TB) map[string]string {
-	return make(map[string]string)
 }
