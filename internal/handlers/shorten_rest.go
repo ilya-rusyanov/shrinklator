@@ -4,38 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"strings"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"go.uber.org/zap"
 )
-
-type shrinker interface {
-	Shrink(string) (string, error)
-	Expand(string) (string, error)
-}
-
-func Shorten(shrinker shrinker, basePath string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		sb := &strings.Builder{}
-		io.Copy(sb, r.Body)
-		short, err := shrinker.Shrink(sb.String())
-
-		if err != nil {
-			logger.Log.Error("error shortening",
-				zap.String("message", err.Error()))
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		result := basePath + "/" + short
-
-		rw.WriteHeader(http.StatusCreated)
-		respondWithString(rw, result)
-	}
-}
 
 func ShortenREST(shrinker shrinker, basePath string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
@@ -91,29 +64,5 @@ func ShortenREST(shrinker shrinker, basePath string) http.HandlerFunc {
 			logger.Log.Error("unable to write response",
 				zap.String("error", err.Error()))
 		}
-	}
-}
-
-func Expand(shrinker shrinker) http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		id := strings.TrimLeft(r.URL.Path, "/")
-
-		url, err := shrinker.Expand(id)
-
-		if err != nil {
-			http.Error(rw, "not found", http.StatusBadRequest)
-			return
-		}
-
-		rw.Header().Add("Location", url)
-		rw.WriteHeader(http.StatusTemporaryRedirect)
-	}
-}
-
-func respondWithString(rw http.ResponseWriter, text string) {
-	if _, err := io.WriteString(rw, text); err != nil {
-		logger.Log.Error("error writing response",
-			zap.String("message", err.Error()))
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
 	}
 }
