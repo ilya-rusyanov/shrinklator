@@ -21,10 +21,10 @@ type dto struct {
 	Long  string `json:"original_url"`
 }
 
-func NewRWPersistence(reader io.Reader, writer io.Writer) *RWPersistence {
-	w := bufio.NewWriter(writer)
+func NewRWPersistence(rw io.ReadWriter) *RWPersistence {
+	w := bufio.NewWriter(rw)
 	return &RWPersistence{
-		reader: reader,
+		reader: rw,
 		writer: w,
 		lastID: 1,
 	}

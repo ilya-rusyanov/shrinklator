@@ -11,7 +11,7 @@ import (
 func TestRWPersistence(t *testing.T) {
 	t.Run("appending", func(t *testing.T) {
 		buf := bytes.Buffer{}
-		p := NewRWPersistence(&buf, &buf)
+		p := NewRWPersistence(&buf)
 		p.Append("4rSPg8ap", "http://yandex.ru")
 		p.Append("edVPg3ks", "http://ya.ru")
 		assert.Equal(t,
@@ -30,7 +30,7 @@ func TestRWPersistence(t *testing.T) {
 `))
 		require.NoError(t, err)
 
-		p := NewRWPersistence(&buf, &buf)
+		p := NewRWPersistence(&buf)
 		values, err := p.ReadAll()
 		require.NoError(t, err)
 
