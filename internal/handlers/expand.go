@@ -5,11 +5,21 @@ import (
 	"strings"
 )
 
-func Expand(shrinker shrinker) http.HandlerFunc {
+type Expand struct {
+	shrinker shrinker
+}
+
+func NewExpand(shrinker shrinker) *Expand {
+	return &Expand{
+		shrinker: shrinker,
+	}
+}
+
+func (e *Expand) Handler() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		id := strings.TrimLeft(r.URL.Path, "/")
 
-		url, err := shrinker.Expand(id)
+		url, err := e.shrinker.Expand(id)
 
 		if err != nil {
 			http.Error(rw, "not found", http.StatusBadRequest)
