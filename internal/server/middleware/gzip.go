@@ -8,8 +8,6 @@ import (
 )
 
 func Gzip(next http.Handler) http.Handler {
-	cw := newCompressWriter()
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// по умолчанию устанавливаем оригинальный http.ResponseWriter как тот,
 		// который будем передавать следующей функции
@@ -19,7 +17,9 @@ func Gzip(next http.Handler) http.Handler {
 		acceptEncoding := r.Header.Get("Accept-Encoding")
 		supportsGzip := strings.Contains(acceptEncoding, "gzip")
 		if supportsGzip {
-			cw.Reset(w)
+			// оборачиваем оригинальный http.ResponseWriter новым с поддержкой сжатия
+			cw := newCompressWriter(w)
+			// меняем оригинальный http.ResponseWriter на новый
 			ow = cw
 			// не забываем отправить клиенту все сжатые данные после завершения middleware
 			defer cw.Close()
@@ -52,8 +52,11 @@ type compressWriter struct {
 	zw *gzip.Writer
 }
 
-func newCompressWriter() *compressWriter {
-	return &compressWriter{}
+func newCompressWriter(w http.ResponseWriter) *compressWriter {
+	return &compressWriter{
+		w:  w,
+		zw: gzip.NewWriter(w),
+	}
 }
 
 func (c *compressWriter) Header() http.Header {
@@ -69,15 +72,6 @@ func (c *compressWriter) WriteHeader(statusCode int) {
 		c.w.Header().Set("Content-Encoding", "gzip")
 	}
 	c.w.WriteHeader(statusCode)
-}
-
-func (c *compressWriter) Reset(w http.ResponseWriter) {
-	c.w = w
-	if c.zw == nil {
-		c.zw = gzip.NewWriter(w)
-	} else {
-		c.zw.Reset(w)
-	}
 }
 
 // Close закрывает gzip.Writer и досылает все данные из буфера.
