@@ -42,9 +42,9 @@ func main() {
 		}
 		defer file.Close()
 
-		repository = storage.Interface(file)
+		repository = file
 	} else {
-		repository = storage.Interface(storage.NewInMemory(log))
+		repository = storage.NewInMemory(log)
 	}
 
 	shortenerService := services.NewShortener(repository)
