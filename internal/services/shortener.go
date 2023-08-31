@@ -10,7 +10,7 @@ import (
 var errHashing = errors.New("bad input")
 
 type shortStorage interface {
-	Put(id string, value string)
+	Put(id string, value string) error
 	ByID(id string) (string, error)
 }
 
@@ -23,11 +23,14 @@ func NewShortener(storage shortStorage) *Shortener {
 	return res
 }
 
-func (s *Shortener) Shrink(input string) string {
+func (s *Shortener) Shrink(input string) (string, error) {
 	hash := md5.Sum([]byte(input))
 	hashStr := hex.EncodeToString(hash[:])
-	s.storage.Put(hashStr, input)
-	return hashStr
+	err := s.storage.Put(hashStr, input)
+	if err != nil {
+		return "", fmt.Errorf("error storing: %w", err)
+	}
+	return hashStr, nil
 }
 
 func (s *Shortener) Expand(input string) (string, error) {

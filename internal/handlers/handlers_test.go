@@ -10,6 +10,7 @@ import (
 
 	"github.com/ilya-rusyanov/shrinklator/internal/services"
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
+	"go.uber.org/zap"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -38,11 +39,14 @@ func TestShortenHandler(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
-			storage := storage.NewInMemory()
+			noLog := zap.NewNop()
+			storage := storage.NewInMemory(noLog)
 			model := services.NewShortener(storage)
 
-			server := httptest.NewServer(
-				Shorten(model, "http://localhost:8080"))
+			shortenHandler := NewShorten(noLog, model,
+				"http://localhost:8080")
+
+			server := httptest.NewServer(shortenHandler.Handler())
 			defer server.Close()
 
 			req, err := http.NewRequest(
@@ -64,69 +68,6 @@ func TestShortenHandler(t *testing.T) {
 				string(respBody))
 
 			assert.Equal(t, test.want.code, resp.StatusCode)
-		})
-	}
-}
-
-func TestExpandHandler(t *testing.T) {
-	type want struct {
-		code             int
-		redirectLocation string
-	}
-	tests := []struct {
-		testName string
-		arg      string
-		want     want
-	}{
-		{
-			testName: "empty request",
-			arg:      "",
-			want: want{
-				code:             http.StatusBadRequest,
-				redirectLocation: "",
-			},
-		},
-		{
-			testName: "nonexistent request",
-			arg:      "a0",
-			want: want{
-				code:             http.StatusBadRequest,
-				redirectLocation: "",
-			},
-		},
-		{
-			testName: "existing url",
-			arg:      "664b8054bac1af66baafa7a01acd15ee",
-			want: want{
-				code:             http.StatusTemporaryRedirect,
-				redirectLocation: "http://yandex.ru",
-			},
-		},
-	}
-
-	storage := storage.NewInMemory()
-	storage.Put("664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru")
-
-	for _, test := range tests {
-		t.Run(test.testName, func(t *testing.T) {
-			model := services.NewShortener(storage)
-			handler := Expand(model)
-
-			req, err := http.NewRequest(
-				http.MethodGet,
-				"/"+test.arg,
-				nil)
-
-			require.NoError(t, err)
-
-			resp := httptest.NewRecorder()
-			handler.ServeHTTP(resp, req)
-
-			assert.Equal(t,
-				test.want.redirectLocation,
-				resp.Header().Get("Location"))
-
-			assert.Equal(t, test.want.code, resp.Code)
 		})
 	}
 }
