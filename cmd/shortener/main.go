@@ -15,13 +15,15 @@ import (
 
 func newRouter(log *logger.Log, shortenHandler http.HandlerFunc,
 	expandHandler http.HandlerFunc,
-	restShortener http.HandlerFunc) chi.Router {
+	restShortener http.HandlerFunc,
+	pingHandler http.HandlerFunc) chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.NewLogger(log).Middleware())
 	r.Use(middleware.Gzip)
 	r.Post("/", shortenHandler)
 	r.Get("/{id}", expandHandler)
 	r.Post("/api/shorten", restShortener)
+	r.Get("/ping", pingHandler)
 	return r
 }
 
@@ -47,18 +49,32 @@ func main() {
 		repository = storage.NewInMemory(log)
 	}
 
+	db, err := storage.NewPostgres(log, config.DSN)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
 	shortenerService := services.NewShortener(repository)
+	pingService := services.NewPing(db)
 
 	shortenHandler := handlers.NewShorten(log, shortenerService, config.BasePath)
 	expandHandler := handlers.NewExpand(shortenerService)
 	restShortenerHandler := handlers.NewShortenREST(log, shortenerService,
 		config.BasePath)
+	pingHandler := handlers.NewPing(log, pingService)
 
 	router := newRouter(
 		log,
 		shortenHandler.Handler(),
 		expandHandler.Handler(),
-		restShortenerHandler.Handler())
+		restShortenerHandler.Handler(),
+		pingHandler.Handler())
 
 	err = server.Run(config.ListenAddr, router)
 	if err != nil {

@@ -11,6 +11,7 @@ type Config struct {
 	LogLevel        string
 	FileStoragePath string
 	StoreInFile     bool
+	DSN             string
 }
 
 func New() *Config {
@@ -22,6 +23,9 @@ func New() *Config {
 	flag.StringVar(&res.LogLevel, "l", "info", "log level")
 	flag.StringVar(&res.FileStoragePath, "f", "/tmp/short-url-db.json",
 		"filepath to simple database")
+	flag.StringVar(&res.DSN, "d",
+		"host=localhost port=5432 user=myuser password=xxxx dbname=mydb sslmode=disable",
+		"data source name")
 	return &res
 }
 
@@ -42,5 +46,9 @@ func (c *Config) Parse() {
 
 	if c.FileStoragePath != "" {
 		c.StoreInFile = true
+	}
+
+	if val, ok := os.LookupEnv("DATABASE_DSN"); ok {
+		c.DSN = val
 	}
 }
