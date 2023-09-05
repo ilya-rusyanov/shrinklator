@@ -36,8 +36,21 @@ func main() {
 		panic(err)
 	}
 
+	db, err := storage.NewPostgres(log, config.DSN)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
 	var repository storage.Interface
 	switch {
+	case config.StoreInDB:
+		repository = db
 	case config.StoreInFile:
 		file, err := storage.NewFile(log, config.FileStoragePath)
 		if err != nil {
@@ -49,17 +62,6 @@ func main() {
 	default:
 		repository = storage.NewInMemory(log)
 	}
-
-	db, err := storage.NewPostgres(log, config.DSN)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			panic(err)
-		}
-	}()
 
 	shortenerService := services.NewShortener(repository)
 	pingService := services.NewPing(db)

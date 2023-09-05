@@ -48,3 +48,11 @@ func (p *Postgres) Close() error {
 
 	return nil
 }
+
+func (p *Postgres) Put(id, value string) error {
+	return nil
+}
+
+func (p *Postgres) ByID(id string) (string, error) {
+	return "", nil
+}
