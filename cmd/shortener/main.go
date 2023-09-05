@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/ilya-rusyanov/shrinklator/internal/config"
@@ -48,6 +50,12 @@ func main() {
 			panic(err)
 		}
 	}()
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	defer cancel()
+	if err := db.Ping(ctx); err != nil {
+		log.Error("failed to ping DB")
+		os.Exit(1)
+	}
 
 	var repository storage.Interface
 	switch {
