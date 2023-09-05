@@ -54,6 +54,7 @@ func main() {
 		}()
 
 		repository = db
+		log.Info("storage is database")
 	case config.StoreInFile:
 		file, err := storage.NewFile(log, config.FileStoragePath)
 		if err != nil {
@@ -62,8 +63,10 @@ func main() {
 		defer file.Close()
 
 		repository = file
+		log.Info("storage is file")
 	default:
 		repository = storage.NewInMemory(log)
+		log.Info("in memory storage")
 	}
 
 	shortenerService := services.NewShortener(repository)
