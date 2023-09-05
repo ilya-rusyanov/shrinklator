@@ -65,7 +65,16 @@ func (p *Postgres) Put(ctx context.Context, id, value string) error {
 }
 
 func (p *Postgres) ByID(ctx context.Context, id string) (string, error) {
-	return "", nil
+	row := p.db.QueryRowContext(ctx,
+		`SELECT long FROM shorts WHERE short = $1`, id)
+	var res string
+	row.Scan(&res)
+	fmt.Println(res)
+	if err := row.Err(); err != nil {
+		return "", fmt.Errorf("error fetching record: %w", err)
+	}
+	p.log.Debug("successfull record fetch")
+	return res, nil
 }
 
 func migrate(ctx context.Context, log *logger.Log, db *sql.DB) error {
