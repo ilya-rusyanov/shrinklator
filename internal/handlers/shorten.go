@@ -27,7 +27,7 @@ func (s *Shorten) Handler() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		sb := &strings.Builder{}
 		io.Copy(sb, r.Body)
-		short, err := s.shrinker.Shrink(sb.String())
+		short, err := s.shrinker.Shrink(r.Context(), sb.String())
 
 		if err != nil {
 			s.log.Error("error shortening",

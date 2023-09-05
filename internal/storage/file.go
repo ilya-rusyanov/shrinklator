@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -52,7 +53,7 @@ func NewFile(log *logger.Log, filename string) (*file, error) {
 	}, nil
 }
 
-func (f *file) Put(id, value string) error {
+func (f *file) Put(ctx context.Context, id, value string) error {
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
 
@@ -60,7 +61,7 @@ func (f *file) Put(id, value string) error {
 	return f.fileStore(id, value)
 }
 
-func (f *file) ByID(id string) (string, error) {
+func (f *file) ByID(ctx context.Context, id string) (string, error) {
 	f.mutex.RLock()
 	defer f.mutex.RUnlock()
 

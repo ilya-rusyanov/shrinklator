@@ -54,11 +54,11 @@ func (p *Postgres) Close() error {
 	return nil
 }
 
-func (p *Postgres) Put(id, value string) error {
+func (p *Postgres) Put(ctx context.Context, id, value string) error {
 	return nil
 }
 
-func (p *Postgres) ByID(id string) (string, error) {
+func (p *Postgres) ByID(ctx context.Context, id string) (string, error) {
 	return "", nil
 }
 

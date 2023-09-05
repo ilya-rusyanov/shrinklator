@@ -51,7 +51,7 @@ func (s *ShortenREST) Handler() http.HandlerFunc {
 			return
 		}
 
-		short, err := s.shrinker.Shrink(shortenRequest.URL)
+		short, err := s.shrinker.Shrink(r.Context(), shortenRequest.URL)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			s.log.Error("error shortening URL",

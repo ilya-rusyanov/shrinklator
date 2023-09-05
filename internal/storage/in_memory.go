@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"sync"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
@@ -20,7 +21,7 @@ func NewInMemory(log *logger.Log) *inMemory {
 	}
 }
 
-func (s *inMemory) Put(id, value string) error {
+func (s *inMemory) Put(ctx context.Context, id, value string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -32,7 +33,7 @@ func (s *inMemory) Put(id, value string) error {
 	return nil
 }
 
-func (s *inMemory) ByID(id string) (string, error) {
+func (s *inMemory) ByID(ctx context.Context, id string) (string, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
