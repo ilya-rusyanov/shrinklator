@@ -37,7 +37,8 @@ func main() {
 	}
 
 	var repository storage.Interface
-	if config.StoreInFile {
+	switch {
+	case config.StoreInFile:
 		file, err := storage.NewFile(log, config.FileStoragePath)
 		if err != nil {
 			panic(err)
@@ -45,7 +46,7 @@ func main() {
 		defer file.Close()
 
 		repository = file
-	} else {
+	default:
 		repository = storage.NewInMemory(log)
 	}
 
