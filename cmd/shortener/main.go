@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"net/http"
-	"os"
-	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/ilya-rusyanov/shrinklator/internal/config"
@@ -39,27 +37,22 @@ func main() {
 		panic(err)
 	}
 
-	ctx := context.Background()
-	db, err := storage.NewPostgres(ctx, log, config.DSN)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		err := db.Close()
+	var repository storage.Interface
+	database := storage.NewNoDB()
+	switch {
+	case config.StoreInDB:
+		ctx := context.Background()
+		db, err := storage.NewPostgres(ctx, log, config.DSN)
 		if err != nil {
 			panic(err)
 		}
-	}()
-	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
-	defer cancel()
-	if err := db.Ping(ctx); err != nil {
-		log.Error("failed to ping DB")
-		os.Exit(1)
-	}
+		defer func() {
+			err := db.Close()
+			if err != nil {
+				panic(err)
+			}
+		}()
 
-	var repository storage.Interface
-	switch {
-	case config.StoreInDB:
 		repository = db
 	case config.StoreInFile:
 		file, err := storage.NewFile(log, config.FileStoragePath)
@@ -74,7 +67,7 @@ func main() {
 	}
 
 	shortenerService := services.NewShortener(repository)
-	pingService := services.NewPing(db)
+	pingService := services.NewPing(database)
 
 	shortenHandler := handlers.NewShorten(log, shortenerService, config.BasePath)
 	expandHandler := handlers.NewExpand(shortenerService)
