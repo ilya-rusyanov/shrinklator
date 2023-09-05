@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -50,7 +51,8 @@ func TestExpandHandler(t *testing.T) {
 	}
 
 	storage := storage.NewInMemory(zap.NewNop())
-	storage.Put("664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru")
+	storage.Put(context.TODO(),
+		"664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru")
 
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {

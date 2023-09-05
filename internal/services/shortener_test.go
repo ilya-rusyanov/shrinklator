@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"testing"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
@@ -15,7 +16,7 @@ func TestShortener(t *testing.T) {
 	t.Run("short new", func(t *testing.T) {
 		s := NewShortener(storage.NewInMemory(noLog))
 
-		got, err := s.Shrink("http://yandex.ru")
+		got, err := s.Shrink(context.TODO(), "http://yandex.ru")
 		require.NoError(t, err)
 
 		want := "664b8054bac1af66baafa7a01acd15ee"
@@ -26,7 +27,7 @@ func TestShortener(t *testing.T) {
 	t.Run("expand unknown", func(t *testing.T) {
 		s := NewShortener(storage.NewInMemory(noLog))
 
-		_, err := s.Expand("a")
+		_, err := s.Expand(context.TODO(), "a")
 
 		if err == nil {
 			t.Fatal("must raise error")
@@ -38,10 +39,10 @@ func TestShortener(t *testing.T) {
 
 		url := "http://yandex.ru"
 
-		short, err := s.Shrink(url)
+		short, err := s.Shrink(context.TODO(), url)
 		require.NoError(t, err)
 
-		got, err := s.Expand(short)
+		got, err := s.Expand(context.TODO(), short)
 		require.NoError(t, err)
 
 		assert.Equal(t, url, got)
@@ -50,7 +51,7 @@ func TestShortener(t *testing.T) {
 	t.Run("expand unknown", func(t *testing.T) {
 		s := NewShortener(storage.NewInMemory(noLog))
 
-		_, err := s.Expand("http://google.com")
+		_, err := s.Expand(context.TODO(), "http://google.com")
 
 		require.Error(t, err)
 	})
