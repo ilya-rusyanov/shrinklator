@@ -55,6 +55,12 @@ func (p *Postgres) Close() error {
 }
 
 func (p *Postgres) Put(ctx context.Context, id, value string) error {
+	_, err := p.db.ExecContext(ctx,
+		`INSERT INTO shorts (short, long) VALUES ($1, $2)`, id, value)
+	if err != nil {
+		return fmt.Errorf("error writing to DB: %w", err)
+	}
+	p.log.Debug("successfull write to database")
 	return nil
 }
 
