@@ -63,9 +63,10 @@ func (p *Postgres) ByID(ctx context.Context, id string) (string, error) {
 }
 
 func migrate(ctx context.Context, log *logger.Log, db *sql.DB) error {
-	tableName := "shorts"
 	_, err := db.ExecContext(ctx,
-		"CREATE TABLE IF NOT EXISTS "+tableName+" (short text, long text)")
+		`CREATE TABLE IF NOT EXISTS shorts (short text, long text,
+PRIMARY KEY (short)
+)`)
 	if err != nil {
 		return fmt.Errorf("failed to create table: %w", err)
 	}
