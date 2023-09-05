@@ -14,13 +14,18 @@ type Postgres struct {
 	log *logger.Log
 }
 
-func NewPostgres(log *logger.Log, dsn string) (*Postgres, error) {
+func NewPostgres(ctx context.Context, log *logger.Log, dsn string) (*Postgres, error) {
 	db, err := sql.Open("pgx", dsn)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to open DB: %w", err)
 	}
 	log.Info("connected to database")
+
+	err = migrate(ctx, log, db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to migrate: %w", err)
+	}
 
 	return &Postgres{
 		db:  db,
@@ -55,4 +60,16 @@ func (p *Postgres) Put(id, value string) error {
 
 func (p *Postgres) ByID(id string) (string, error) {
 	return "", nil
+}
+
+func migrate(ctx context.Context, log *logger.Log, db *sql.DB) error {
+	tableName := "shorts"
+	_, err := db.ExecContext(ctx,
+		"CREATE TABLE IF NOT EXISTS "+tableName+" (short text, long text)")
+	if err != nil {
+		return fmt.Errorf("failed to create table: %w", err)
+	}
+	log.Info("db migrated")
+
+	return nil
 }

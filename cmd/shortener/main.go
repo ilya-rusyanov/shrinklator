@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -36,7 +37,8 @@ func main() {
 		panic(err)
 	}
 
-	db, err := storage.NewPostgres(log, config.DSN)
+	ctx := context.Background()
+	db, err := storage.NewPostgres(ctx, log, config.DSN)
 	if err != nil {
 		panic(err)
 	}
