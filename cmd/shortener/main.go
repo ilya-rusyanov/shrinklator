@@ -38,7 +38,7 @@ func main() {
 	}
 
 	var repository storage.Interface
-	database := storage.NewNoDB()
+	var pingable services.Database = storage.NewNoDB()
 	switch {
 	case config.StoreInDB:
 		ctx := context.Background()
@@ -54,6 +54,7 @@ func main() {
 		}()
 
 		repository = db
+		pingable = db
 		log.Info("storage is database")
 	case config.StoreInFile:
 		file, err := storage.NewFile(log, config.FileStoragePath)
@@ -70,7 +71,7 @@ func main() {
 	}
 
 	shortenerService := services.NewShortener(repository)
-	pingService := services.NewPing(database)
+	pingService := services.NewPing(pingable)
 
 	shortenHandler := handlers.NewShorten(log, shortenerService, config.BasePath)
 	expandHandler := handlers.NewExpand(shortenerService)
