@@ -17,7 +17,8 @@ import (
 func newRouter(log *logger.Log, shortenHandler http.HandlerFunc,
 	expandHandler http.HandlerFunc,
 	restShortener http.HandlerFunc,
-	pingHandler http.HandlerFunc) chi.Router {
+	pingHandler http.HandlerFunc,
+	batchHandler http.HandlerFunc) chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.NewLogger(log).Middleware())
 	r.Use(middleware.Gzip)
@@ -25,6 +26,7 @@ func newRouter(log *logger.Log, shortenHandler http.HandlerFunc,
 	r.Get("/{id}", expandHandler)
 	r.Post("/api/shorten", restShortener)
 	r.Get("/ping", pingHandler)
+	r.Post("/api/shorten/batch", batchHandler)
 	return r
 }
 
@@ -70,21 +72,26 @@ func main() {
 		log.Info("in memory storage")
 	}
 
-	shortenerService := services.NewShortener(repository, services.MD5Algo)
+	algorithm := services.MD5Algo
+
+	shortenerService := services.NewShortener(repository, algorithm)
 	pingService := services.NewPing(pingable)
+	batchService := services.NewBatch(repository, algorithm)
 
 	shortenHandler := handlers.NewShorten(log, shortenerService, config.BasePath)
 	expandHandler := handlers.NewExpand(shortenerService)
 	restShortenerHandler := handlers.NewShortenREST(log, shortenerService,
 		config.BasePath)
 	pingHandler := handlers.NewPing(log, pingService)
+	batchHandler := handlers.NewBatchShorten(log, batchService)
 
 	router := newRouter(
 		log,
 		shortenHandler.Handler(),
 		expandHandler.Handler(),
 		restShortenerHandler.Handler(),
-		pingHandler.Handler())
+		pingHandler.Handler(),
+		batchHandler.Handler())
 
 	err = server.Run(config.ListenAddr, router)
 	if err != nil {

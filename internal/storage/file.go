@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 
 	"go.uber.org/zap"
@@ -59,6 +60,10 @@ func (f *file) Put(ctx context.Context, id, value string) error {
 
 	f.memoryStore(id, value)
 	return f.fileStore(id, value)
+}
+
+func (f *file) PutBatch(ctx context.Context, data []entities.ShortLongPair) error {
+	return fmt.Errorf("TODO")
 }
 
 func (f *file) ByID(ctx context.Context, id string) (string, error) {

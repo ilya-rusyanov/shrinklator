@@ -2,8 +2,10 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
+	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"go.uber.org/zap"
 )
@@ -31,6 +33,10 @@ func (s *inMemory) Put(ctx context.Context, id, value string) error {
 	s.data[id] = value
 
 	return nil
+}
+
+func (s *inMemory) PutBatch(ctx context.Context, data []entities.ShortLongPair) error {
+	return fmt.Errorf("TODO")
 }
 
 func (s *inMemory) ByID(ctx context.Context, id string) (string, error) {

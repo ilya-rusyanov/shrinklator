@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -62,6 +63,11 @@ func (p *Postgres) Put(ctx context.Context, id, value string) error {
 	}
 	p.log.Debug("successfull write to database")
 	return nil
+}
+
+func (p *Postgres) PutBatch(ctx context.Context, data []entities.ShortLongPair) error {
+	// TODO: transaction
+	return fmt.Errorf("TODO")
 }
 
 func (p *Postgres) ByID(ctx context.Context, id string) (string, error) {
