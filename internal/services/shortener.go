@@ -2,8 +2,6 @@ package services
 
 import (
 	"context"
-	"crypto/md5"
-	"encoding/hex"
 	"errors"
 	"fmt"
 )
@@ -17,21 +15,24 @@ type shortStorage interface {
 
 type Shortener struct {
 	storage shortStorage
+	algo    Algo
 }
 
-func NewShortener(storage shortStorage) *Shortener {
-	res := &Shortener{storage}
+func NewShortener(storage shortStorage, algorithm Algo) *Shortener {
+	res := &Shortener{
+		storage: storage,
+		algo:    algorithm,
+	}
 	return res
 }
 
 func (s *Shortener) Shrink(ctx context.Context, input string) (string, error) {
-	hash := md5.Sum([]byte(input))
-	hashStr := hex.EncodeToString(hash[:])
-	err := s.storage.Put(ctx, hashStr, input)
+	short := s.algo(input)
+	err := s.storage.Put(ctx, short, input)
 	if err != nil {
 		return "", fmt.Errorf("error storing: %w", err)
 	}
-	return hashStr, nil
+	return short, nil
 }
 
 func (s *Shortener) Expand(ctx context.Context, input string) (string, error) {

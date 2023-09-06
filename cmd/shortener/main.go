@@ -70,7 +70,7 @@ func main() {
 		log.Info("in memory storage")
 	}
 
-	shortenerService := services.NewShortener(repository)
+	shortenerService := services.NewShortener(repository, services.MD5Algo)
 	pingService := services.NewPing(pingable)
 
 	shortenHandler := handlers.NewShorten(log, shortenerService, config.BasePath)
