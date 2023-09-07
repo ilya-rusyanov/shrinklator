@@ -9,8 +9,8 @@ import (
 )
 
 type BatchServicer interface {
-	BatchShorten(context.Context, []entities.CorrelationPair) (
-		[]entities.CorrelationPair, error)
+	BatchShorten(context.Context, []entities.BatchRequest) (
+		[]entities.BatchResponse, error)
 }
 
 type BatchShorten struct {

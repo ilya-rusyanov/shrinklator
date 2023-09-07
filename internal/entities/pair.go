@@ -5,7 +5,12 @@ type ShortLongPair struct {
 	Long  string
 }
 
-type CorrelationPair struct {
-	ID  string
-	URL string
+type BatchRequest struct {
+	ID      string
+	LongURL string
+}
+
+type BatchResponse struct {
+	ID       string
+	ShortURL string
 }

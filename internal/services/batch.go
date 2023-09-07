@@ -24,6 +24,6 @@ func NewBatch(storage BatchStorage, algorithm Algo) *Batch {
 }
 
 func (b *Batch) BatchShorten(ctx context.Context,
-	input []entities.CorrelationPair) ([]entities.CorrelationPair, error) {
+	input []entities.BatchRequest) ([]entities.BatchResponse, error) {
 	return nil, fmt.Errorf("TODO")
 }
