@@ -66,8 +66,26 @@ func (p *Postgres) Put(ctx context.Context, id, value string) error {
 }
 
 func (p *Postgres) PutBatch(ctx context.Context, data []entities.ShortLongPair) error {
-	// TODO: transaction
-	return fmt.Errorf("TODO")
+	tx, err := p.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	for _, pair := range data {
+		_, err := tx.ExecContext(ctx, `INSERT INTO shorts (short, long)
+VALUES ($1, $2)`, pair.Short, pair.Long)
+		if err != nil {
+			return fmt.Errorf("failed to execute statement in transaction: %w", err)
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
 }
 
 func (p *Postgres) ByID(ctx context.Context, id string) (string, error) {
