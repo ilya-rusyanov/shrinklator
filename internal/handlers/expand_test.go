@@ -56,7 +56,7 @@ func TestExpandHandler(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
-			model := services.NewShortener(storage)
+			model := services.NewShortener(storage, services.MD5Algo)
 
 			handler := NewExpand(model)
 
@@ -68,7 +68,7 @@ func TestExpandHandler(t *testing.T) {
 			require.NoError(t, err)
 
 			resp := httptest.NewRecorder()
-			handler.Handler().ServeHTTP(resp, req)
+			handler.Handler(resp, req)
 
 			assert.Equal(t,
 				test.want.redirectLocation,

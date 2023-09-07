@@ -48,7 +48,7 @@ func TestShortenRESThandler(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			noLog := zap.NewNop()
 			storage := storage.NewInMemory(noLog)
-			service := services.NewShortener(storage)
+			service := services.NewShortener(storage, services.MD5Algo)
 			handler := NewShortenREST(noLog, service, "http://localhost")
 
 			req, err := http.NewRequest(
@@ -58,7 +58,7 @@ func TestShortenRESThandler(t *testing.T) {
 			require.NoError(t, err)
 
 			resp := httptest.NewRecorder()
-			handler.Handler().ServeHTTP(resp, req)
+			handler.Handler(resp, req)
 
 			respBody, err := io.ReadAll(resp.Body)
 			require.NoError(t, err)
