@@ -6,11 +6,11 @@ type ShortLongPair struct {
 }
 
 type BatchRequest struct {
-	ID      string
-	LongURL string
+	ID      string `json:"correlation_id"`
+	LongURL string `json:"original_url"`
 }
 
 type BatchResponse struct {
-	ID       string
-	ShortURL string
+	ID       string `json:"correlation_id"`
+	ShortURL string `json:"short_url"`
 }

@@ -83,7 +83,7 @@ func main() {
 	restShortenerHandler := handlers.NewShortenREST(log, shortenerService,
 		config.BasePath)
 	pingHandler := handlers.NewPing(log, pingService)
-	batchHandler := handlers.NewBatchShorten(log, batchService)
+	batchHandler := handlers.NewBatchShorten(log, batchService, config.BasePath)
 
 	router := newRouter(
 		log,
