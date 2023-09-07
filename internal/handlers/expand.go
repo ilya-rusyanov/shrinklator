@@ -15,18 +15,16 @@ func NewExpand(shrinker shrinker) *Expand {
 	}
 }
 
-func (e *Expand) Handler() http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		id := strings.TrimLeft(r.URL.Path, "/")
+func (e *Expand) Handler(rw http.ResponseWriter, r *http.Request) {
+	id := strings.TrimLeft(r.URL.Path, "/")
 
-		url, err := e.shrinker.Expand(r.Context(), id)
+	url, err := e.shrinker.Expand(r.Context(), id)
 
-		if err != nil {
-			http.Error(rw, "not found", http.StatusBadRequest)
-			return
-		}
-
-		rw.Header().Add("Location", url)
-		rw.WriteHeader(http.StatusTemporaryRedirect)
+	if err != nil {
+		http.Error(rw, "not found", http.StatusBadRequest)
+		return
 	}
+
+	rw.Header().Add("Location", url)
+	rw.WriteHeader(http.StatusTemporaryRedirect)
 }

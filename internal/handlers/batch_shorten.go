@@ -25,7 +25,5 @@ func NewBatchShorten(log *logger.Log, service BatchServicer) *BatchShorten {
 	}
 }
 
-func (s *BatchShorten) Handler() http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
-	}
+func (s *BatchShorten) Handler(rw http.ResponseWriter, r *http.Request) {
 }

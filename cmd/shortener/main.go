@@ -87,11 +87,11 @@ func main() {
 
 	router := newRouter(
 		log,
-		shortenHandler.Handler(),
-		expandHandler.Handler(),
-		restShortenerHandler.Handler(),
-		pingHandler.Handler(),
-		batchHandler.Handler())
+		shortenHandler.Handler,
+		expandHandler.Handler,
+		restShortenerHandler.Handler,
+		pingHandler.Handler,
+		batchHandler.Handler)
 
 	err = server.Run(config.ListenAddr, router)
 	if err != nil {

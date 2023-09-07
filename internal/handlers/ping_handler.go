@@ -23,15 +23,13 @@ func NewPing(log *logger.Log, pinger Pinger) *PingHandler {
 	}
 }
 
-func (h *PingHandler) Handler() func(http.ResponseWriter, *http.Request) {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		err := h.pinger.Ping(r.Context())
+func (h *PingHandler) Handler(rw http.ResponseWriter, r *http.Request) {
+	err := h.pinger.Ping(r.Context())
 
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		rw.WriteHeader(http.StatusOK)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
 	}
+
+	rw.WriteHeader(http.StatusOK)
 }
