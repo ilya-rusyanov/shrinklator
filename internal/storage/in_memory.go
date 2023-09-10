@@ -30,6 +30,12 @@ func (s *inMemory) Put(ctx context.Context, id, value string) error {
 	s.log.Info("store", zap.String("id", id),
 		zap.String("value", value))
 
+	if val, ok := s.data[id]; ok {
+		return ErrAlreadyExists{
+			StoredValue: val,
+		}
+	}
+
 	s.data[id] = value
 
 	return nil

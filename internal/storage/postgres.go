@@ -3,10 +3,13 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -59,6 +62,20 @@ func (p *Postgres) Put(ctx context.Context, id, value string) error {
 	_, err := p.db.ExecContext(ctx,
 		`INSERT INTO shorts (short, long) VALUES ($1, $2)`, id, value)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+			row := p.db.QueryRowContext(ctx,
+				`SELECT short FROM shorts WHERE long = $1`, value)
+			var short string
+			row.Scan(&short)
+			if err := row.Err(); err != nil {
+				return fmt.Errorf("error scanning value: %w", err)
+			}
+
+			return ErrAlreadyExists{
+				StoredValue: short,
+			}
+		}
 		return fmt.Errorf("error writing to DB: %w", err)
 	}
 	p.log.Debug("successfull write to database")
@@ -93,7 +110,6 @@ func (p *Postgres) ByID(ctx context.Context, id string) (string, error) {
 		`SELECT long FROM shorts WHERE short = $1`, id)
 	var res string
 	row.Scan(&res)
-	fmt.Println(res)
 	if err := row.Err(); err != nil {
 		return "", fmt.Errorf("error fetching record: %w", err)
 	}

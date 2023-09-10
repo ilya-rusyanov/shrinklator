@@ -58,7 +58,10 @@ func (f *file) Put(ctx context.Context, id, value string) error {
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
 
-	f.memoryStore(id, value)
+	err := f.memoryStore(id, value)
+	if err != nil {
+		return err
+	}
 	return f.fileStore(id, value)
 }
 
@@ -87,8 +90,16 @@ func (f *file) Close() {
 	f.file.Close()
 }
 
-func (f *file) memoryStore(id, value string) {
+func (f *file) memoryStore(id, value string) error {
+	if val, ok := f.data[id]; ok {
+		return ErrAlreadyExists{
+			StoredValue: val,
+		}
+	}
+
 	f.data[id] = value
+
+	return nil
 }
 
 func (f *file) fileStore(id, value string) error {
