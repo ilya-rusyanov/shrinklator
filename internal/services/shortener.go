@@ -2,11 +2,8 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 )
-
-var errHashing = errors.New("bad input")
 
 type shortStorage interface {
 	Put(ctx context.Context, id string, value string) error
