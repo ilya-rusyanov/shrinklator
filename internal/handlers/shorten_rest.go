@@ -3,12 +3,10 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
-	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 	"go.uber.org/zap"
 )
 
@@ -55,16 +53,13 @@ func (s *ShortenREST) Handler(rw http.ResponseWriter, r *http.Request) {
 	status := http.StatusCreated
 
 	short, err := s.shrinker.Shrink(r.Context(), shortenRequest.URL)
-	var exists storage.ErrAlreadyExists
-	switch {
-	case errors.As(err, &exists):
-		status = http.StatusConflict
-		short = exists.StoredValue
-	case err != nil:
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		s.log.Error("error shortening URL",
-			zap.String("message", err.Error()))
-		return
+	if err != nil {
+		if short, err = handleAlreadyExists(err, &status); err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			s.log.Error("error shortening URL",
+				zap.String("message", err.Error()))
+			return
+		}
 	}
 
 	result["result"] = s.basePath + "/" + short

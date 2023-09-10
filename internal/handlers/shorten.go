@@ -26,18 +26,20 @@ func NewShorten(log *logger.Log, shrinker shrinker, basePath string) *Shorten {
 func (s *Shorten) Handler(rw http.ResponseWriter, r *http.Request) {
 	sb := &strings.Builder{}
 	io.Copy(sb, r.Body)
+	status := http.StatusCreated
 	short, err := s.shrinker.Shrink(r.Context(), sb.String())
-
 	if err != nil {
-		s.log.Error("error shortening",
-			zap.String("message", err.Error()))
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
+		if short, err = handleAlreadyExists(err, &status); err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			s.log.Error("error shortening URL",
+				zap.String("message", err.Error()))
+			return
+		}
 	}
 
 	result := s.basePath + "/" + short
 
-	rw.WriteHeader(http.StatusCreated)
+	rw.WriteHeader(status)
 	s.respondWithString(rw, result)
 }
 
