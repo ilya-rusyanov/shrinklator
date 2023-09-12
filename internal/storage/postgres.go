@@ -89,9 +89,15 @@ func (p *Postgres) PutBatch(ctx context.Context, data []entities.ShortLongPair) 
 	}
 	defer tx.Rollback()
 
+	stmt, err := tx.PrepareContext(ctx, `INSERT INTO shorts (short, long)
+VALUES ($1, $2)`)
+	if err != nil {
+		return fmt.Errorf("failed to prepare statement: %w", err)
+	}
+	defer stmt.Close()
+
 	for _, pair := range data {
-		_, err := tx.ExecContext(ctx, `INSERT INTO shorts (short, long)
-VALUES ($1, $2)`, pair.Short, pair.Long)
+		_, err := stmt.ExecContext(ctx, pair.Short, pair.Long)
 		if err != nil {
 			return fmt.Errorf("failed to execute statement in transaction: %w", err)
 		}
