@@ -10,20 +10,20 @@ import (
 	"go.uber.org/zap"
 )
 
-type inMemory struct {
+type InMemory struct {
 	data  map[string]string
 	mutex sync.RWMutex
 	log   *logger.Log
 }
 
-func NewInMemory(log *logger.Log) *inMemory {
-	return &inMemory{
+func NewInMemory(log *logger.Log) *InMemory {
+	return &InMemory{
 		data: make(map[string]string),
 		log:  log,
 	}
 }
 
-func (s *inMemory) Put(ctx context.Context, id, value string) error {
+func (s *InMemory) Put(ctx context.Context, id, value string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -41,11 +41,11 @@ func (s *inMemory) Put(ctx context.Context, id, value string) error {
 	return nil
 }
 
-func (s *inMemory) PutBatch(ctx context.Context, data []entities.ShortLongPair) error {
+func (s *InMemory) PutBatch(ctx context.Context, data []entities.ShortLongPair) error {
 	return fmt.Errorf("TODO")
 }
 
-func (s *inMemory) ByID(ctx context.Context, id string) (string, error) {
+func (s *InMemory) ByID(ctx context.Context, id string) (string, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 

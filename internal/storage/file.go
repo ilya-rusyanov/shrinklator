@@ -17,7 +17,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type file struct {
+type File struct {
 	data  map[string]string
 	mutex sync.RWMutex
 	log   *logger.Log
@@ -30,7 +30,7 @@ type dto struct {
 	Long  string `json:"original_url"`
 }
 
-func NewFile(log *logger.Log, filename string) (*file, error) {
+func NewFile(log *logger.Log, filename string) (*File, error) {
 	dataSource, err := os.OpenFile(filename,
 		os.O_RDWR|os.O_APPEND|os.O_CREATE,
 		0640)
@@ -47,14 +47,14 @@ func NewFile(log *logger.Log, filename string) (*file, error) {
 		return nil, fmt.Errorf("error reading values: %w", err)
 	}
 
-	return &file{
+	return &File{
 		data: initialValues,
 		log:  log,
 		file: dataSource,
 	}, nil
 }
 
-func (f *file) Put(ctx context.Context, id, value string) error {
+func (f *File) Put(ctx context.Context, id, value string) error {
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
 
@@ -65,11 +65,11 @@ func (f *file) Put(ctx context.Context, id, value string) error {
 	return f.fileStore(id, value)
 }
 
-func (f *file) PutBatch(ctx context.Context, data []entities.ShortLongPair) error {
+func (f *File) PutBatch(ctx context.Context, data []entities.ShortLongPair) error {
 	return fmt.Errorf("TODO")
 }
 
-func (f *file) ByID(ctx context.Context, id string) (string, error) {
+func (f *File) ByID(ctx context.Context, id string) (string, error) {
 	f.mutex.RLock()
 	defer f.mutex.RUnlock()
 
@@ -86,11 +86,11 @@ func (f *file) ByID(ctx context.Context, id string) (string, error) {
 	return value, nil
 }
 
-func (f *file) Close() {
+func (f *File) Close() {
 	f.file.Close()
 }
 
-func (f *file) memoryStore(id, value string) error {
+func (f *File) memoryStore(id, value string) error {
 	if val, ok := f.data[id]; ok {
 		return ErrAlreadyExists{
 			StoredValue: val,
@@ -102,7 +102,7 @@ func (f *file) memoryStore(id, value string) error {
 	return nil
 }
 
-func (f *file) fileStore(id, value string) error {
+func (f *File) fileStore(id, value string) error {
 	writer := bufio.NewWriter(f.file)
 
 	payload := dto{Short: id, Long: value, ID: strconv.Itoa(len(f.data))}
