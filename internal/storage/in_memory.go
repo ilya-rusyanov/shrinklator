@@ -23,6 +23,9 @@ func NewInMemory(log *logger.Log) *InMemory {
 	}
 }
 
+func (s *InMemory) MustClose() {
+}
+
 func (s *InMemory) Put(ctx context.Context, id, value string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -60,4 +63,8 @@ func (s *InMemory) ByID(ctx context.Context, id string) (string, error) {
 		zap.String("value", value))
 
 	return value, nil
+}
+
+func (s *InMemory) Ping(context.Context) error {
+	return nil
 }

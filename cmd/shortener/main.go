@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -39,43 +38,14 @@ func main() {
 		panic(err)
 	}
 
-	var repository storage.Interface
-	var pingable services.Database = storage.NewNoDB()
-	switch {
-	case config.StoreInDB:
-		ctx := context.Background()
-		db, err := storage.NewPostgres(ctx, log, config.DSN)
-		if err != nil {
-			panic(err)
-		}
-		defer func() {
-			err := db.Close()
-			if err != nil {
-				panic(err)
-			}
-		}()
+	factory := storage.Factory{}
 
-		repository = db
-		pingable = db
-		log.Info("storage is database")
-	case config.StoreInFile:
-		file, err := storage.NewFile(log, config.FileStoragePath)
-		if err != nil {
-			panic(err)
-		}
-		defer file.Close()
-
-		repository = file
-		log.Info("storage is file")
-	default:
-		repository = storage.NewInMemory(log)
-		log.Info("in memory storage")
-	}
-
+	repository := factory.MustInitStorage(*config, log)
+	defer repository.MustClose()
 	algorithm := services.MD5Algo
 
 	shortenerService := services.NewShortener(repository, algorithm)
-	pingService := services.NewPing(pingable)
+	pingService := services.NewPing(repository)
 	batchService := services.NewBatch(repository, algorithm)
 
 	shortenHandler := handlers.NewShorten(log, shortenerService, config.BasePath)

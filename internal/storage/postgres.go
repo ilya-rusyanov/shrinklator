@@ -48,14 +48,12 @@ func (p *Postgres) Ping(ctx context.Context) error {
 	return nil
 }
 
-func (p *Postgres) Close() error {
+func (p *Postgres) MustClose() {
 	err := p.db.Close()
 
 	if err != nil {
-		return fmt.Errorf("error closing DB: %w", err)
+		panic(fmt.Errorf("error closing DB: %w", err))
 	}
-
-	return nil
 }
 
 func (p *Postgres) Put(ctx context.Context, id, value string) error {

@@ -86,8 +86,14 @@ func (f *File) ByID(ctx context.Context, id string) (string, error) {
 	return value, nil
 }
 
-func (f *File) Close() {
-	f.file.Close()
+func (f *File) MustClose() {
+	if err := f.file.Close(); err != nil {
+		panic(fmt.Errorf("error closing file: %w", err))
+	}
+}
+
+func (f *File) Ping(context.Context) error {
+	return nil
 }
 
 func (f *File) memoryStore(id, value string) error {
