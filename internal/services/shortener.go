@@ -1,40 +1,39 @@
 package services
 
 import (
-	"crypto/md5"
-	"encoding/hex"
-	"errors"
+	"context"
 	"fmt"
 )
 
-var errHashing = errors.New("bad input")
-
 type shortStorage interface {
-	Put(id string, value string) error
-	ByID(id string) (string, error)
+	Put(ctx context.Context, id string, value string) error
+	ByID(ctx context.Context, id string) (string, error)
 }
 
 type Shortener struct {
 	storage shortStorage
+	algo    Algo
 }
 
-func NewShortener(storage shortStorage) *Shortener {
-	res := &Shortener{storage}
+func NewShortener(storage shortStorage, algorithm Algo) *Shortener {
+	res := &Shortener{
+		storage: storage,
+		algo:    algorithm,
+	}
 	return res
 }
 
-func (s *Shortener) Shrink(input string) (string, error) {
-	hash := md5.Sum([]byte(input))
-	hashStr := hex.EncodeToString(hash[:])
-	err := s.storage.Put(hashStr, input)
+func (s *Shortener) Shrink(ctx context.Context, input string) (string, error) {
+	short := s.algo(input)
+	err := s.storage.Put(ctx, short, input)
 	if err != nil {
 		return "", fmt.Errorf("error storing: %w", err)
 	}
-	return hashStr, nil
+	return short, nil
 }
 
-func (s *Shortener) Expand(input string) (string, error) {
-	url, err := s.storage.ByID(input)
+func (s *Shortener) Expand(ctx context.Context, input string) (string, error) {
+	url, err := s.storage.ByID(ctx, input)
 
 	if err != nil {
 		return "", fmt.Errorf("error searching: %w", err)

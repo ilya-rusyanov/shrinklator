@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -50,11 +51,12 @@ func TestExpandHandler(t *testing.T) {
 	}
 
 	storage := storage.NewInMemory(zap.NewNop())
-	storage.Put("664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru")
+	storage.Put(context.TODO(),
+		"664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru")
 
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
-			model := services.NewShortener(storage)
+			model := services.NewShortener(storage, services.MD5Algo)
 
 			handler := NewExpand(model)
 
@@ -66,7 +68,7 @@ func TestExpandHandler(t *testing.T) {
 			require.NoError(t, err)
 
 			resp := httptest.NewRecorder()
-			handler.Handler().ServeHTTP(resp, req)
+			handler.Handler(resp, req)
 
 			assert.Equal(t,
 				test.want.redirectLocation,

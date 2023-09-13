@@ -1,6 +1,8 @@
 package handlers
 
+import "context"
+
 type shrinker interface {
-	Shrink(string) (string, error)
-	Expand(string) (string, error)
+	Shrink(context.Context, string) (string, error)
+	Expand(context.Context, string) (string, error)
 }
