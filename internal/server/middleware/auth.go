@@ -1,0 +1,80 @@
+package middleware
+
+import (
+	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/ilya-rusyanov/shrinklator/internal/logger"
+)
+
+type PseudoAuth struct {
+	log        *logger.Log
+	key        string
+	cookieName string
+	expiration time.Duration
+}
+
+type claims struct {
+	jwt.RegisteredClaims
+	UserID int
+}
+
+func NewPseudoAuth(log *logger.Log, key string) *PseudoAuth {
+	return &PseudoAuth{
+		log:        log,
+		key:        key,
+		cookieName: "access_token",
+		expiration: 10 * time.Minute,
+	}
+}
+
+func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie(a.cookieName)
+		if err != nil || !a.valid(*cookie) {
+			a.log.Debug("building auth cookie")
+			c, err := a.buildAuthCookie()
+			if err != nil {
+				a.log.Error("failed to create auth cookie")
+			} else {
+				http.SetCookie(rw, c)
+			}
+		}
+		next.ServeHTTP(rw, r)
+	})
+}
+
+func (a *PseudoAuth) valid(cookie http.Cookie) bool {
+	claims := &claims{}
+	_, err := jwt.ParseWithClaims(cookie.Value, claims,
+		func(t *jwt.Token) (interface{}, error) {
+			return []byte(a.key), nil
+		})
+
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
+}
+
+func (a *PseudoAuth) buildAuthCookie() (*http.Cookie, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(a.expiration)),
+		},
+		UserID: 1,
+	})
+
+	tokenString, err := token.SignedString([]byte(a.key))
+	if err != nil {
+		return nil, fmt.Errorf("failed to sign token: %w", err)
+	}
+
+	return &http.Cookie{
+		Name:  a.cookieName,
+		Value: tokenString,
+	}, nil
+}

@@ -13,6 +13,8 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 )
 
+const tokenKey string = "this is security flaw"
+
 func newRouter(log *logger.Log, shortenHandler http.HandlerFunc,
 	expandHandler http.HandlerFunc,
 	restShortener http.HandlerFunc,
@@ -21,6 +23,7 @@ func newRouter(log *logger.Log, shortenHandler http.HandlerFunc,
 	r := chi.NewRouter()
 	r.Use(middleware.NewLogger(log).Middleware())
 	r.Use(middleware.Gzip)
+	r.Use(middleware.NewPseudoAuth(log, tokenKey).Middleware)
 	r.Post("/", shortenHandler)
 	r.Get("/{id}", expandHandler)
 	r.Post("/api/shorten", restShortener)
