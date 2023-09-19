@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+
+	"github.com/ilya-rusyanov/shrinklator/internal/handlers"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 )
 
@@ -14,11 +16,6 @@ type PseudoAuth struct {
 	key        string
 	cookieName string
 	expiration time.Duration
-}
-
-type claims struct {
-	jwt.RegisteredClaims
-	UserID int
 }
 
 func NewPseudoAuth(log *logger.Log, key string) *PseudoAuth {
@@ -47,8 +44,7 @@ func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 }
 
 func (a *PseudoAuth) valid(cookie http.Cookie) bool {
-	claims := &claims{}
-	_, err := jwt.ParseWithClaims(cookie.Value, claims,
+	_, err := jwt.ParseWithClaims(cookie.Value, &handlers.Claims{},
 		func(t *jwt.Token) (interface{}, error) {
 			return []byte(a.key), nil
 		})
@@ -61,7 +57,7 @@ func (a *PseudoAuth) valid(cookie http.Cookie) bool {
 }
 
 func (a *PseudoAuth) buildAuthCookie() (*http.Cookie, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, handlers.Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(a.expiration)),
 		},
