@@ -121,6 +121,10 @@ func (p *Postgres) ByID(ctx context.Context, id string) (string, error) {
 	return res, nil
 }
 
+func (s *Postgres) ByUID(context.Context, int) (entities.PairArray, error) {
+	return nil, errors.New("TODO")
+}
+
 func migrate(ctx context.Context, log *logger.Log, db *sql.DB) error {
 	_, err := db.ExecContext(ctx,
 		`CREATE TABLE IF NOT EXISTS shorts (short text, long text UNIQUE, user_id integer,

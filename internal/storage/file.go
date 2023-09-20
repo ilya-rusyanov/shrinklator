@@ -86,6 +86,10 @@ func (f *File) ByID(ctx context.Context, id string) (string, error) {
 	return value, nil
 }
 
+func (s *File) ByUID(context.Context, int) (entities.PairArray, error) {
+	return nil, errors.New("TODO")
+}
+
 func (f *File) MustClose() {
 	if err := f.file.Close(); err != nil {
 		panic(fmt.Errorf("error closing file: %w", err))

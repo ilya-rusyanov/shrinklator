@@ -1,12 +1,14 @@
 package services
 
 import (
-	"errors"
+	"context"
+	"fmt"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 )
 
 type UserURLsRepository interface {
+	ByUID(context.Context, int) (entities.PairArray, error)
 }
 
 type UserURLs struct {
@@ -19,6 +21,12 @@ func NewUserURLs(repo UserURLsRepository) *UserURLs {
 	}
 }
 
-func (u *UserURLs) URLsForUser(uid int) (entities.PairArray, error) {
-	return entities.PairArray{}, errors.New("TODO")
+func (u *UserURLs) URLsForUser(ctx context.Context, uid int) (entities.PairArray, error) {
+	urls, err := u.repo.ByUID(ctx, uid)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch user URLs from repository: %w", err)
+	}
+
+	return urls, nil
 }

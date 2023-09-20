@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,7 +15,7 @@ import (
 var errNoUserID = errors.New("cookie does not contain user ID")
 
 type URLsService interface {
-	URLsForUser(int) (entities.PairArray, error)
+	URLsForUser(context.Context, int) (entities.PairArray, error)
 }
 
 type UserURLs struct {
@@ -55,7 +56,7 @@ func (u *UserURLs) Handler(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	urls, err := u.service.URLsForUser(id)
+	urls, err := u.service.URLsForUser(r.Context(), id)
 
 	if err != nil {
 		http.Error(rw, fmt.Sprintf("failed to fetch URLs: %q", err.Error()),

@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -63,6 +64,10 @@ func (s *InMemory) ByID(ctx context.Context, id string) (string, error) {
 		zap.String("value", value))
 
 	return value, nil
+}
+
+func (s *InMemory) ByUID(context.Context, int) (entities.PairArray, error) {
+	return nil, errors.New("TODO")
 }
 
 func (s *InMemory) Ping(context.Context) error {
