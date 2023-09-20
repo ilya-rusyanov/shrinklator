@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 
+	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 	"github.com/ilya-rusyanov/shrinklator/internal/handlers"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 )
@@ -61,7 +62,7 @@ func (a *PseudoAuth) buildAuthCookie() (*http.Cookie, error) {
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(a.expiration)),
 		},
-		UserID: func() *int { val := 1; return &val }(),
+		UserID: func() *entities.UserID { val := entities.UserID(1); return &val }(),
 	})
 
 	tokenString, err := token.SignedString([]byte(a.key))

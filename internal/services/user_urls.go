@@ -8,7 +8,7 @@ import (
 )
 
 type UserURLsRepository interface {
-	ByUID(context.Context, int) (entities.PairArray, error)
+	ByUID(context.Context, entities.UserID) (entities.PairArray, error)
 }
 
 type UserURLs struct {
@@ -21,7 +21,7 @@ func NewUserURLs(repo UserURLsRepository) *UserURLs {
 	}
 }
 
-func (u *UserURLs) URLsForUser(ctx context.Context, uid int) (entities.PairArray, error) {
+func (u *UserURLs) URLsForUser(ctx context.Context, uid entities.UserID) (entities.PairArray, error) {
 	urls, err := u.repo.ByUID(ctx, uid)
 
 	if err != nil {

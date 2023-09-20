@@ -86,7 +86,7 @@ func (f *File) ByID(ctx context.Context, id string) (string, error) {
 	return value, nil
 }
 
-func (s *File) ByUID(context.Context, int) (entities.PairArray, error) {
+func (s *File) ByUID(context.Context, entities.UserID) (entities.PairArray, error) {
 	return nil, errors.New("TODO")
 }
 

@@ -15,7 +15,7 @@ import (
 var errNoUserID = errors.New("cookie does not contain user ID")
 
 type URLsService interface {
-	URLsForUser(context.Context, int) (entities.PairArray, error)
+	URLsForUser(context.Context, entities.UserID) (entities.PairArray, error)
 }
 
 type UserURLs struct {
@@ -81,7 +81,7 @@ func (u *UserURLs) Handler(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (u *UserURLs) getUID(cookie *http.Cookie) (id int, err error) {
+func (u *UserURLs) getUID(cookie *http.Cookie) (id entities.UserID, err error) {
 	claims := &Claims{}
 	_, err = jwt.ParseWithClaims(cookie.Value, claims,
 		func(t *jwt.Token) (interface{}, error) {
