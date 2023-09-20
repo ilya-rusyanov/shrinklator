@@ -121,8 +121,33 @@ func (p *Postgres) ByID(ctx context.Context, id string) (string, error) {
 	return res, nil
 }
 
-func (s *Postgres) ByUID(context.Context, entities.UserID) (entities.PairArray, error) {
-	return nil, errors.New("TODO")
+func (p *Postgres) ByUID(ctx context.Context,
+	uid entities.UserID) (entities.PairArray, error) {
+	rows, err := p.db.QueryContext(ctx,
+		`SELECT short, long FROM shorts WHERE user_id = $1`, uid)
+	if err != nil {
+		return nil, fmt.Errorf("error selecting rows: %w", err)
+	}
+	defer rows.Close()
+
+	var pairs entities.PairArray
+
+	for rows.Next() {
+		var pair entities.ShortLongPair
+		err = rows.Scan(&pair.Short, &pair.Long)
+
+		if err != nil {
+			return nil, fmt.Errorf("error scanning row: %w", err)
+		}
+
+		pairs = append(pairs, pair)
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("rows error: %w", err)
+	}
+
+	return pairs, nil
 }
 
 func migrate(ctx context.Context, log *logger.Log, db *sql.DB) error {
