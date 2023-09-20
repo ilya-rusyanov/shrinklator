@@ -11,7 +11,7 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 )
 
-var noUserID = errors.New("cookie does not contain user ID")
+var errNoUserID = errors.New("cookie does not contain user ID")
 
 type URLsService interface {
 	URLsForUser(int) (entities.PairArray, error)
@@ -47,7 +47,7 @@ func (u *UserURLs) Handler(rw http.ResponseWriter, r *http.Request) {
 	id, err := u.getUID(cookie)
 
 	if err != nil {
-		if errors.Is(err, noUserID) {
+		if errors.Is(err, errNoUserID) {
 			http.Error(rw, "user ID is expected", http.StatusUnauthorized)
 			return
 		} else {
@@ -92,7 +92,7 @@ func (u *UserURLs) getUID(cookie *http.Cookie) (id int, err error) {
 	}
 
 	if claims.UserID == nil {
-		return -1, noUserID
+		return -1, errNoUserID
 	}
 
 	return *claims.UserID, nil
