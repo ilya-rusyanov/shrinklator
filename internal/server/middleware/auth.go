@@ -18,11 +18,11 @@ type PseudoAuth struct {
 	expiration time.Duration
 }
 
-func NewPseudoAuth(log *logger.Log, key string) *PseudoAuth {
+func NewPseudoAuth(log *logger.Log, key, cookieName string) *PseudoAuth {
 	return &PseudoAuth{
 		log:        log,
 		key:        key,
-		cookieName: "access_token",
+		cookieName: cookieName,
 		expiration: 10 * time.Minute,
 	}
 }
@@ -61,7 +61,7 @@ func (a *PseudoAuth) buildAuthCookie() (*http.Cookie, error) {
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(a.expiration)),
 		},
-		UserID: 1,
+		UserID: func() *int { val := 1; return &val }(),
 	})
 
 	tokenString, err := token.SignedString([]byte(a.key))

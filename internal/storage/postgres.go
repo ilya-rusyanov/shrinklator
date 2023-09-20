@@ -123,7 +123,7 @@ func (p *Postgres) ByID(ctx context.Context, id string) (string, error) {
 
 func migrate(ctx context.Context, log *logger.Log, db *sql.DB) error {
 	_, err := db.ExecContext(ctx,
-		`CREATE TABLE IF NOT EXISTS shorts (short text, long text UNIQUE,
+		`CREATE TABLE IF NOT EXISTS shorts (short text, long text UNIQUE, user_id integer,
 PRIMARY KEY (short)
 )`)
 	if err != nil {
