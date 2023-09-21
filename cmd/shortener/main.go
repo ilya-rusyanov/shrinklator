@@ -50,7 +50,7 @@ func main() {
 	defer repository.MustClose()
 	algorithm := services.MD5Algo
 
-	shortenerService := services.NewShortener(repository, algorithm)
+	shortenerService := services.NewShortener(log, repository, algorithm)
 	pingService := services.NewPing(repository)
 	batchService := services.NewBatch(repository, algorithm)
 	userURLsService := services.NewUserURLs(repository)

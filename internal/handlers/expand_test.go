@@ -53,13 +53,14 @@ func TestExpandHandler(t *testing.T) {
 
 	var someUser *entities.UserID
 
-	storage := storage.NewInMemory(zap.NewNop())
+	noLog := zap.NewNop()
+	storage := storage.NewInMemory(noLog)
 	storage.Put(context.TODO(),
 		"664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru", someUser)
 
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
-			model := services.NewShortener(storage, services.MD5Algo)
+			model := services.NewShortener(noLog, storage, services.MD5Algo)
 
 			handler := NewExpand(model)
 

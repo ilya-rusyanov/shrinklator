@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
+	"github.com/ilya-rusyanov/shrinklator/internal/logger"
+	"go.uber.org/zap"
 )
 
 type shortStorage interface {
@@ -15,12 +17,14 @@ type shortStorage interface {
 type Shortener struct {
 	storage shortStorage
 	algo    Algo
+	log     *logger.Log
 }
 
-func NewShortener(storage shortStorage, algorithm Algo) *Shortener {
+func NewShortener(log *logger.Log, storage shortStorage, algorithm Algo) *Shortener {
 	res := &Shortener{
 		storage: storage,
 		algo:    algorithm,
+		log:     log,
 	}
 	return res
 }
@@ -28,6 +32,7 @@ func NewShortener(storage shortStorage, algorithm Algo) *Shortener {
 func (s *Shortener) Shrink(ctx context.Context, input string, uid *entities.UserID) (string, error) {
 	short := s.algo(input)
 	err := s.storage.Put(ctx, short, input, uid)
+	s.log.Info("shortened", zap.String("short", short), zap.String("long", input))
 	if err != nil {
 		return "", fmt.Errorf("error storing: %w", err)
 	}

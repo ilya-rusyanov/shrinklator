@@ -18,7 +18,7 @@ func TestShortener(t *testing.T) {
 	var someUser *entities.UserID
 
 	t.Run("short new", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory(noLog), algo)
+		s := NewShortener(noLog, storage.NewInMemory(noLog), algo)
 
 		got, err := s.Shrink(context.TODO(), "http://yandex.ru", someUser)
 		require.NoError(t, err)
@@ -29,7 +29,7 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand unknown", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory(noLog), algo)
+		s := NewShortener(noLog, storage.NewInMemory(noLog), algo)
 
 		_, err := s.Expand(context.TODO(), "a")
 
@@ -39,7 +39,7 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand known", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory(noLog), algo)
+		s := NewShortener(noLog, storage.NewInMemory(noLog), algo)
 
 		url := "http://yandex.ru"
 
@@ -53,7 +53,7 @@ func TestShortener(t *testing.T) {
 	})
 
 	t.Run("expand unknown", func(t *testing.T) {
-		s := NewShortener(storage.NewInMemory(noLog), algo)
+		s := NewShortener(noLog, storage.NewInMemory(noLog), algo)
 
 		_, err := s.Expand(context.TODO(), "http://google.com")
 
