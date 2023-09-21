@@ -57,8 +57,10 @@ func (p *Postgres) MustClose() {
 }
 
 func (p *Postgres) Put(ctx context.Context, id, value string) error {
+	uid := uidFrom(ctx)
+
 	_, err := p.db.ExecContext(ctx,
-		`INSERT INTO shorts (short, long) VALUES ($1, $2)`, id, value)
+		`INSERT INTO shorts (short, long, integer) VALUES ($1, $2, $3)`, id, value, uid)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
@@ -159,6 +161,15 @@ PRIMARY KEY (short)
 		return fmt.Errorf("failed to create table: %w", err)
 	}
 	log.Info("db migrated")
+
+	return nil
+}
+
+func uidFrom(ctx context.Context) *entities.UserID {
+	if id := ctx.Value("uid"); id != nil {
+		val := id.(entities.UserID)
+		return &val
+	}
 
 	return nil
 }
