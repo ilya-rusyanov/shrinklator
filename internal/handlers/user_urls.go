@@ -66,7 +66,7 @@ func (u *UserURLs) Handler(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	rw.Header().Add("Content-Type", "application/json")
-	rw.WriteHeader(http.StatusCreated)
+	rw.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(rw).Encode(urls); err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
