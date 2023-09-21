@@ -6,10 +6,11 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 )
 
-func getUID(ctx context.Context) (id entities.UserID, err error) {
+func getUID(ctx context.Context) *entities.UserID {
 	if id := ctx.Value(UID); id != nil {
-		return id.(entities.UserID), nil
+		val := id.(entities.UserID)
+		return &val
 	}
 
-	return entities.UserID(0), errNoUserID
+	return nil
 }

@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -11,8 +10,6 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"go.uber.org/zap"
 )
-
-var errNoUserID = errors.New("user ID is not specified")
 
 type URLsService interface {
 	URLsForUser(context.Context, entities.UserID) (entities.PairArray, error)
@@ -34,20 +31,14 @@ func NewUserURLs(log *logger.Log, service URLsService,
 }
 
 func (u *UserURLs) Handler(rw http.ResponseWriter, r *http.Request) {
-	id, err := getUID(r.Context())
+	id := getUID(r.Context())
 
-	if err != nil {
-		if errors.Is(err, errNoUserID) {
-			http.Error(rw, "user ID is expected", http.StatusUnauthorized)
-			return
-		} else {
-			u.log.Error("unexpected failure to retrieve user id",
-				zap.String("err", err.Error()))
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-		}
+	if id == nil {
+		http.Error(rw, "user ID is expected", http.StatusUnauthorized)
+		return
 	}
 
-	urls, err := u.service.URLsForUser(r.Context(), id)
+	urls, err := u.service.URLsForUser(r.Context(), *id)
 
 	if err != nil {
 		u.log.Info("failure to fetch URLs", zap.String("err", err.Error()))
