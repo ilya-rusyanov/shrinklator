@@ -27,7 +27,7 @@ func NewInMemory(log *logger.Log) *InMemory {
 func (s *InMemory) MustClose() {
 }
 
-func (s *InMemory) Put(ctx context.Context, id, value string) error {
+func (s *InMemory) Put(ctx context.Context, id, value string, uid *entities.UserID) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 

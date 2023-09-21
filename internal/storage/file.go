@@ -54,7 +54,7 @@ func NewFile(log *logger.Log, filename string) (*File, error) {
 	}, nil
 }
 
-func (f *File) Put(ctx context.Context, id, value string) error {
+func (f *File) Put(ctx context.Context, id, value string, uid *entities.UserID) error {
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
 

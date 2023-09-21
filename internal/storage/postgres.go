@@ -56,9 +56,7 @@ func (p *Postgres) MustClose() {
 	}
 }
 
-func (p *Postgres) Put(ctx context.Context, id, value string) error {
-	uid := uidFrom(ctx)
-
+func (p *Postgres) Put(ctx context.Context, id, value string, uid *entities.UserID) error {
 	_, err := p.db.ExecContext(ctx,
 		`INSERT INTO shorts (short, long, user_id) VALUES ($1, $2, $3)`, id, value, uid)
 	if err != nil {
@@ -161,15 +159,6 @@ PRIMARY KEY (short)
 		return fmt.Errorf("failed to create table: %w", err)
 	}
 	log.Info("db migrated")
-
-	return nil
-}
-
-func uidFrom(ctx context.Context) *entities.UserID {
-	if id := ctx.Value("uid"); id != nil {
-		val := id.(entities.UserID)
-		return &val
-	}
 
 	return nil
 }
