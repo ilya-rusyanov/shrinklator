@@ -10,6 +10,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
+	"go.uber.org/zap"
 )
 
 var errNoUserID = errors.New("cookie does not contain user ID")
@@ -40,6 +41,7 @@ func NewUserURLs(log *logger.Log, service URLsService, tokenKey,
 func (u *UserURLs) Handler(rw http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie(u.cookieName)
 	if err != nil {
+		u.log.Info("request without cookie")
 		http.Error(rw, fmt.Sprintf("cannot get cookie from request: %q", err.Error()),
 			http.StatusInternalServerError)
 		return
@@ -52,6 +54,8 @@ func (u *UserURLs) Handler(rw http.ResponseWriter, r *http.Request) {
 			http.Error(rw, "user ID is expected", http.StatusUnauthorized)
 			return
 		} else {
+			u.log.Info("failure to extract user id from cookie",
+				zap.String("err", err.Error()))
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 		}
 	}
@@ -59,6 +63,7 @@ func (u *UserURLs) Handler(rw http.ResponseWriter, r *http.Request) {
 	urls, err := u.service.URLsForUser(r.Context(), id)
 
 	if err != nil {
+		u.log.Info("failure to fetch URLs", zap.String("err", err.Error()))
 		http.Error(rw, fmt.Sprintf("failed to fetch URLs: %q", err.Error()),
 			http.StatusInternalServerError)
 		return
