@@ -38,7 +38,7 @@ func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 
 		if err != nil || !a.valid(*cookie, &uid) {
 			a.log.Info("request misses auth cookie, building it")
-			uid := new(entities.UserID)
+			uid = new(entities.UserID)
 			*uid = entities.UserID(rand.Intn(65535))
 			c, err := a.buildAuthCookie(*uid)
 			if err != nil {
