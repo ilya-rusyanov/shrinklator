@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -32,9 +33,13 @@ func NewPseudoAuth(log *logger.Log, key, cookieName string) *PseudoAuth {
 func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie(a.cookieName)
-		if err != nil || !a.valid(*cookie) {
+		var uid *entities.UserID
+
+		if err != nil || !a.valid(*cookie, uid) {
 			a.log.Info("request misses auth cookie, building it")
-			c, err := a.buildAuthCookie()
+			uid := new(entities.UserID)
+			*uid = 1
+			c, err := a.buildAuthCookie(*uid)
 			if err != nil {
 				a.log.Error("failed to create auth cookie",
 					zap.String("err", err.Error()))
@@ -46,29 +51,36 @@ func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 			a.log.Info("request with valid auth cookie")
 		}
 
+		if uid != nil {
+			ctx := context.WithValue(r.Context(), "uid", *uid)
+			r.WithContext(ctx)
+		}
+
 		next.ServeHTTP(rw, r)
 	})
 }
 
-func (a *PseudoAuth) valid(cookie http.Cookie) bool {
-	_, err := jwt.ParseWithClaims(cookie.Value, &handlers.Claims{},
+func (a *PseudoAuth) valid(cookie http.Cookie, uid *entities.UserID) bool {
+	claims := handlers.Claims{}
+	_, err := jwt.ParseWithClaims(cookie.Value, &claims,
 		func(t *jwt.Token) (interface{}, error) {
 			return []byte(a.key), nil
 		})
 
 	if err != nil {
 		return false
-	} else {
-		return true
 	}
+
+	uid = claims.UserID
+	return true
 }
 
-func (a *PseudoAuth) buildAuthCookie() (*http.Cookie, error) {
+func (a *PseudoAuth) buildAuthCookie(uid entities.UserID) (*http.Cookie, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, handlers.Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(a.expiration)),
 		},
-		UserID: func() *entities.UserID { val := entities.UserID(1); return &val }(),
+		UserID: &uid,
 	})
 
 	tokenString, err := token.SignedString([]byte(a.key))
