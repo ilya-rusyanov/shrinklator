@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"go.uber.org/zap"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 	"github.com/ilya-rusyanov/shrinklator/internal/handlers"
@@ -32,14 +33,19 @@ func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie(a.cookieName)
 		if err != nil || !a.valid(*cookie) {
-			a.log.Debug("building auth cookie")
+			a.log.Info("request misses auth cookie, building it")
 			c, err := a.buildAuthCookie()
 			if err != nil {
-				a.log.Error("failed to create auth cookie")
+				a.log.Error("failed to create auth cookie",
+					zap.String("err", err.Error()))
+				return
 			} else {
 				http.SetCookie(rw, c)
 			}
+		} else {
+			a.log.Info("request with valid auth cookie")
 		}
+
 		next.ServeHTTP(rw, r)
 	})
 }
