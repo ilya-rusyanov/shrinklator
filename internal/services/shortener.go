@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"fmt"
+
+	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 )
 
 type shortStorage interface {
@@ -23,7 +25,7 @@ func NewShortener(storage shortStorage, algorithm Algo) *Shortener {
 	return res
 }
 
-func (s *Shortener) Shrink(ctx context.Context, input string) (string, error) {
+func (s *Shortener) Shrink(ctx context.Context, input string, uid *entities.UserID) (string, error) {
 	short := s.algo(input)
 	err := s.storage.Put(ctx, short, input)
 	if err != nil {
