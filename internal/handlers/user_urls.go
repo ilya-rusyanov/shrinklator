@@ -34,7 +34,7 @@ func NewUserURLs(log *logger.Log, service URLsService,
 }
 
 func (u *UserURLs) Handler(rw http.ResponseWriter, r *http.Request) {
-	id, err := u.getUID(r.Context())
+	id, err := getUID(r.Context())
 
 	if err != nil {
 		if errors.Is(err, errNoUserID) {
@@ -71,12 +71,4 @@ func (u *UserURLs) Handler(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
-}
-
-func (u *UserURLs) getUID(ctx context.Context) (id entities.UserID, err error) {
-	if id := ctx.Value("uid"); id != nil {
-		return id.(entities.UserID), nil
-	}
-
-	return entities.UserID(0), errNoUserID
 }
