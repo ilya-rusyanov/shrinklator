@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -38,7 +39,7 @@ func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 		if err != nil || !a.valid(*cookie, &uid) {
 			a.log.Info("request misses auth cookie, building it")
 			uid := new(entities.UserID)
-			*uid = 1
+			*uid = entities.UserID(rand.Intn(65535))
 			c, err := a.buildAuthCookie(*uid)
 			if err != nil {
 				a.log.Error("failed to create auth cookie",
