@@ -35,7 +35,7 @@ func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 		cookie, err := r.Cookie(a.cookieName)
 		var uid *entities.UserID
 
-		if err != nil || !a.valid(*cookie, uid) {
+		if err != nil || !a.valid(*cookie, &uid) {
 			a.log.Info("request misses auth cookie, building it")
 			uid := new(entities.UserID)
 			*uid = 1
@@ -52,15 +52,18 @@ func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 		}
 
 		if uid != nil {
+			a.log.Info("user id ", zap.Int("id", int(*uid)))
 			ctx := context.WithValue(r.Context(), "uid", *uid)
-			r.WithContext(ctx)
+			r = r.WithContext(ctx)
+		} else {
+			a.log.Debug("user id missing")
 		}
 
 		next.ServeHTTP(rw, r)
 	})
 }
 
-func (a *PseudoAuth) valid(cookie http.Cookie, uid *entities.UserID) bool {
+func (a *PseudoAuth) valid(cookie http.Cookie, uid **entities.UserID) bool {
 	claims := handlers.Claims{}
 	_, err := jwt.ParseWithClaims(cookie.Value, &claims,
 		func(t *jwt.Token) (interface{}, error) {
@@ -71,7 +74,8 @@ func (a *PseudoAuth) valid(cookie http.Cookie, uid *entities.UserID) bool {
 		return false
 	}
 
-	uid = claims.UserID
+	*uid = claims.UserID
+
 	return true
 }
 

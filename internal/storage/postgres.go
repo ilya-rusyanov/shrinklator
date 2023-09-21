@@ -60,7 +60,7 @@ func (p *Postgres) Put(ctx context.Context, id, value string) error {
 	uid := uidFrom(ctx)
 
 	_, err := p.db.ExecContext(ctx,
-		`INSERT INTO shorts (short, long, integer) VALUES ($1, $2, $3)`, id, value, uid)
+		`INSERT INTO shorts (short, long, user_id) VALUES ($1, $2, $3)`, id, value, uid)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
