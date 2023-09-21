@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -19,7 +20,6 @@ type PseudoAuth struct {
 	key        string
 	cookieName string
 	expiration time.Duration
-	lastUserID entities.UserID
 }
 
 func NewPseudoAuth(log *logger.Log, key, cookieName string) *PseudoAuth {
@@ -38,11 +38,8 @@ func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 
 		if err != nil || !a.valid(*cookie, &uid) {
 			a.log.Info("request misses auth cookie, building it")
-			{
-				uid = new(entities.UserID)
-				*uid = a.lastUserID
-				a.lastUserID++
-			}
+			uid = new(entities.UserID)
+			*uid = entities.UserID(rand.Intn(65535))
 			c, err := a.buildAuthCookie(*uid)
 			if err != nil {
 				a.log.Error("failed to create auth cookie",
