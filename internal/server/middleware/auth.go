@@ -44,6 +44,7 @@ func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 			if err != nil {
 				a.log.Error("failed to create auth cookie",
 					zap.String("err", err.Error()))
+				http.Error(rw, "cookie creation failure", http.StatusInternalServerError)
 				return
 			} else {
 				http.SetCookie(rw, c)
