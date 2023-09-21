@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"go.uber.org/zap"
 )
 
 type Postgres struct {
@@ -123,6 +124,7 @@ func (p *Postgres) ByID(ctx context.Context, id string) (string, error) {
 
 func (p *Postgres) ByUID(ctx context.Context,
 	uid entities.UserID) (entities.PairArray, error) {
+	p.log.Info("selecting by uid", zap.Int("uid", int(uid)))
 	rows, err := p.db.QueryContext(ctx,
 		`SELECT short, long FROM shorts WHERE user_id = $1`, uid)
 	if err != nil {
@@ -146,6 +148,8 @@ func (p *Postgres) ByUID(ctx context.Context,
 	if rows.Err() != nil {
 		return nil, fmt.Errorf("rows error: %w", err)
 	}
+
+	p.log.Info("success", zap.Int("rows found", len(pairs)))
 
 	return pairs, nil
 }
