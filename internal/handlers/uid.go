@@ -3,5 +3,5 @@ package handlers
 type ContextKey int
 
 const (
-	UID = iota
+	UID ContextKey = iota
 )
