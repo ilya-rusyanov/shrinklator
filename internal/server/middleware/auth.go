@@ -54,7 +54,7 @@ func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 
 		if uid != nil {
 			a.log.Info("user id ", zap.Int("id", int(*uid)))
-			ctx := context.WithValue(r.Context(), "uid", *uid)
+			ctx := context.WithValue(r.Context(), handlers.UID, *uid)
 			r = r.WithContext(ctx)
 		} else {
 			a.log.Debug("user id missing")
