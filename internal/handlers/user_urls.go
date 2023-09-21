@@ -7,54 +7,41 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/golang-jwt/jwt"
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"go.uber.org/zap"
 )
 
-var errNoUserID = errors.New("cookie does not contain user ID")
+var errNoUserID = errors.New("user ID is not specified")
 
 type URLsService interface {
 	URLsForUser(context.Context, entities.UserID) (entities.PairArray, error)
 }
 
 type UserURLs struct {
-	log        *logger.Log
-	service    URLsService
-	key        string
-	cookieName string
-	baseURL    string
+	log     *logger.Log
+	service URLsService
+	baseURL string
 }
 
-func NewUserURLs(log *logger.Log, service URLsService, tokenKey,
-	cookieName, baseURL string) *UserURLs {
+func NewUserURLs(log *logger.Log, service URLsService,
+	baseURL string) *UserURLs {
 	return &UserURLs{
-		log:        log,
-		service:    service,
-		key:        tokenKey,
-		cookieName: cookieName,
-		baseURL:    baseURL,
+		log:     log,
+		service: service,
+		baseURL: baseURL,
 	}
 }
 
 func (u *UserURLs) Handler(rw http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie(u.cookieName)
-	if err != nil {
-		u.log.Info("request without cookie")
-		http.Error(rw, fmt.Sprintf("cannot get cookie from request: %q", err.Error()),
-			http.StatusInternalServerError)
-		return
-	}
-
-	id, err := u.getUID(cookie)
+	id, err := u.getUID(r.Context())
 
 	if err != nil {
 		if errors.Is(err, errNoUserID) {
 			http.Error(rw, "user ID is expected", http.StatusUnauthorized)
 			return
 		} else {
-			u.log.Info("failure to extract user id from cookie",
+			u.log.Error("unexpected failure to retrieve user id",
 				zap.String("err", err.Error()))
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 		}
@@ -86,20 +73,10 @@ func (u *UserURLs) Handler(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (u *UserURLs) getUID(cookie *http.Cookie) (id entities.UserID, err error) {
-	claims := &Claims{}
-	_, err = jwt.ParseWithClaims(cookie.Value, claims,
-		func(t *jwt.Token) (interface{}, error) {
-			return []byte(u.key), nil
-		})
-
-	if err != nil {
-		return -1, fmt.Errorf("cannot parse token: %w", err)
+func (u *UserURLs) getUID(ctx context.Context) (id entities.UserID, err error) {
+	if id := ctx.Value("uid"); id != nil {
+		return id.(entities.UserID), nil
 	}
 
-	if claims.UserID == nil {
-		return -1, errNoUserID
-	}
-
-	return *claims.UserID, nil
+	return entities.UserID(0), errNoUserID
 }

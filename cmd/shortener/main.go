@@ -61,8 +61,7 @@ func main() {
 		config.BasePath)
 	pingHandler := handlers.NewPing(log, pingService)
 	batchHandler := handlers.NewBatchShorten(log, batchService, config.BasePath)
-	userURLsHandler := handlers.NewUserURLs(log, userURLsService,
-		tokenKey, accessCookieName, config.BasePath)
+	userURLsHandler := handlers.NewUserURLs(log, userURLsService, config.BasePath)
 
 	router := newRouter(
 		log,
