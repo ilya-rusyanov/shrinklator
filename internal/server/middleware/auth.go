@@ -3,11 +3,11 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
@@ -39,7 +39,7 @@ func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 		if err != nil || !a.valid(*cookie, &uid) {
 			a.log.Info("request misses auth cookie, building it")
 			uid = new(entities.UserID)
-			*uid = entities.UserID(rand.Intn(65535))
+			*uid = generateID()
 			c, err := a.buildAuthCookie(*uid)
 			if err != nil {
 				a.log.Error("failed to create auth cookie",
@@ -54,7 +54,7 @@ func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 		}
 
 		if uid != nil {
-			a.log.Info("user id ", zap.Int("id", int(*uid)))
+			a.log.Info("user id ", zap.String("id", string(*uid)))
 			ctx := context.WithValue(r.Context(), handlers.UID, *uid)
 			r = r.WithContext(ctx)
 		} else {
@@ -98,4 +98,8 @@ func (a *PseudoAuth) buildAuthCookie(uid entities.UserID) (*http.Cookie, error) 
 		Name:  a.cookieName,
 		Value: tokenString,
 	}, nil
+}
+
+func generateID() entities.UserID {
+	return entities.UserID(uuid.NewString())
 }

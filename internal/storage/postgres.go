@@ -124,7 +124,7 @@ func (p *Postgres) ByID(ctx context.Context, id string) (string, error) {
 
 func (p *Postgres) ByUID(ctx context.Context,
 	uid entities.UserID) (entities.PairArray, error) {
-	p.log.Info("selecting by uid", zap.Int("uid", int(uid)))
+	p.log.Info("selecting by uid", zap.String("uid", string(uid)))
 	rows, err := p.db.QueryContext(ctx,
 		`SELECT short, long FROM shorts WHERE user_id = $1`, uid)
 	if err != nil {
@@ -156,7 +156,7 @@ func (p *Postgres) ByUID(ctx context.Context,
 
 func migrate(ctx context.Context, log *logger.Log, db *sql.DB) error {
 	_, err := db.ExecContext(ctx,
-		`CREATE TABLE IF NOT EXISTS shorts (short text, long text UNIQUE, user_id integer,
+		`CREATE TABLE IF NOT EXISTS shorts (short text, long text UNIQUE, user_id text,
 PRIMARY KEY (short)
 )`)
 	if err != nil {

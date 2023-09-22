@@ -1,3 +1,3 @@
 package entities
 
-type UserID int
+type UserID string
