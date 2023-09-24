@@ -90,6 +90,10 @@ func (f *File) ByUID(context.Context, entities.UserID) (entities.PairArray, erro
 	return nil, errors.New("TODO")
 }
 
+func (f *File) Delete(context.Context, entities.DeleteRequest) error {
+	return errors.New("TODO")
+}
+
 func (f *File) MustClose() {
 	if err := f.file.Close(); err != nil {
 		panic(fmt.Errorf("error closing file: %w", err))

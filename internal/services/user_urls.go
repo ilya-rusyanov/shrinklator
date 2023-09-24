@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
@@ -10,6 +9,7 @@ import (
 
 type UserURLsRepository interface {
 	ByUID(context.Context, entities.UserID) (entities.PairArray, error)
+	Delete(context.Context, entities.DeleteRequest) error
 }
 
 type UserURLs struct {
@@ -39,5 +39,13 @@ func (u *UserURLs) URLsForUser(ctx context.Context, uid entities.UserID) (entiti
 }
 
 func (u *UserURLs) Delete(ctx context.Context, req entities.DeleteRequest) error {
-	return errors.New("TODO")
+	go func() {
+		err := u.repo.Delete(ctx, req)
+
+		if err != nil {
+			u.delErrs <- err
+		}
+	}()
+
+	return nil
 }

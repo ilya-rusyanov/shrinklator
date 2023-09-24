@@ -154,6 +154,10 @@ func (p *Postgres) ByUID(ctx context.Context,
 	return pairs, nil
 }
 
+func (p *Postgres) Delete(ctx context.Context, req entities.DeleteRequest) error {
+	return errors.New("TODO")
+}
+
 func migrate(ctx context.Context, log *logger.Log, db *sql.DB) error {
 	_, err := db.ExecContext(ctx,
 		`CREATE TABLE IF NOT EXISTS shorts

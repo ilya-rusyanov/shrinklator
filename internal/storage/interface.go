@@ -11,6 +11,7 @@ type Interface interface {
 	PutBatch(context.Context, []entities.ShortLongPair) error
 	ByID(ctx context.Context, id string) (entities.ExpandResult, error)
 	ByUID(context.Context, entities.UserID) (entities.PairArray, error)
+	Delete(context.Context, entities.DeleteRequest) error
 	MustClose()
 	Ping(context.Context) error
 }

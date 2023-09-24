@@ -70,6 +70,10 @@ func (s *InMemory) ByUID(context.Context, entities.UserID) (entities.PairArray, 
 	return nil, errors.New("TODO")
 }
 
+func (s *InMemory) Delete(context.Context, entities.DeleteRequest) error {
+	return errors.New("TODO")
+}
+
 func (s *InMemory) Ping(context.Context) error {
 	return nil
 }
