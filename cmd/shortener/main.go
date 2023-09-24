@@ -21,7 +21,8 @@ func newRouter(log *logger.Log, shortenHandler http.HandlerFunc,
 	restShortener http.HandlerFunc,
 	pingHandler http.HandlerFunc,
 	batchHandler http.HandlerFunc,
-	userURLs http.HandlerFunc) chi.Router {
+	userURLs http.HandlerFunc,
+	del http.HandlerFunc) chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.NewLogger(log).Middleware())
 	r.Use(middleware.Gzip)
@@ -32,6 +33,7 @@ func newRouter(log *logger.Log, shortenHandler http.HandlerFunc,
 	r.Get("/ping", pingHandler)
 	r.Post("/api/shorten/batch", batchHandler)
 	r.Get("/api/user/urls", userURLs)
+	r.Delete("/api/user/urls", del)
 	return r
 }
 
@@ -62,6 +64,7 @@ func main() {
 	pingHandler := handlers.NewPing(log, pingService)
 	batchHandler := handlers.NewBatchShorten(log, batchService, config.BasePath)
 	userURLsHandler := handlers.NewUserURLs(log, userURLsService, config.BasePath)
+	delHandler := handlers.NewDeleteHandler(log, &shortenerService)
 
 	router := newRouter(
 		log,
@@ -70,7 +73,8 @@ func main() {
 		restShortenerHandler.Handler,
 		pingHandler.Handler,
 		batchHandler.Handler,
-		userURLsHandler.Handler)
+		userURLsHandler.Handler,
+		delHandler.Handler)
 
 	err = server.Run(config.ListenAddr, router)
 	if err != nil {

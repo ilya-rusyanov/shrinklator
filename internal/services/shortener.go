@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
@@ -48,4 +49,8 @@ func (s *Shortener) Expand(ctx context.Context, input string) (entities.ExpandRe
 	}
 
 	return res, nil
+}
+
+func (s *Shortener) Delete(ctx context.Context, input string) error {
+	return errors.New("TODO")
 }
