@@ -156,9 +156,8 @@ func (p *Postgres) ByUID(ctx context.Context,
 
 func migrate(ctx context.Context, log *logger.Log, db *sql.DB) error {
 	_, err := db.ExecContext(ctx,
-		`CREATE TABLE IF NOT EXISTS shorts (short text, long text UNIQUE, user_id text,
-PRIMARY KEY (short)
-)`)
+		`CREATE TABLE IF NOT EXISTS shorts
+(short text, long text UNIQUE, user_id text, is_deleted boolean, PRIMARY KEY (short))`)
 	if err != nil {
 		return fmt.Errorf("failed to create table: %w", err)
 	}
