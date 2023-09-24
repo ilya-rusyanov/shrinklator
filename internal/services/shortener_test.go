@@ -49,7 +49,7 @@ func TestShortener(t *testing.T) {
 		got, err := s.Expand(context.TODO(), short)
 		require.NoError(t, err)
 
-		assert.Equal(t, url, got)
+		assert.Equal(t, url, got.URL)
 	})
 
 	t.Run("expand unknown", func(t *testing.T) {

@@ -64,7 +64,7 @@ func main() {
 	pingHandler := handlers.NewPing(log, pingService)
 	batchHandler := handlers.NewBatchShorten(log, batchService, config.BasePath)
 	userURLsHandler := handlers.NewUserURLs(log, userURLsService, config.BasePath)
-	delHandler := handlers.NewDeleteHandler(log, &shortenerService)
+	delHandler := handlers.NewDeleteHandler(log, userURLsService)
 
 	router := newRouter(
 		log,

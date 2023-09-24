@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
@@ -29,4 +30,8 @@ func (u *UserURLs) URLsForUser(ctx context.Context, uid entities.UserID) (entiti
 	}
 
 	return urls, nil
+}
+
+func (u *UserURLs) Delete(ctx context.Context, req entities.DeleteRequest) error {
+	return errors.New("TODO")
 }
