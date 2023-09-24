@@ -13,13 +13,19 @@ type UserURLsRepository interface {
 }
 
 type UserURLs struct {
-	repo UserURLsRepository
+	repo    UserURLsRepository
+	delErrs chan<- error
 }
 
-func NewUserURLs(repo UserURLsRepository) *UserURLs {
-	return &UserURLs{
-		repo: repo,
+func NewUserURLs(repo UserURLsRepository) (service *UserURLs,
+	deleteErrors <-chan error) {
+	de := make(chan error)
+	deleteErrors = de
+	service = &UserURLs{
+		repo:    repo,
+		delErrs: de,
 	}
+	return
 }
 
 func (u *UserURLs) URLsForUser(ctx context.Context, uid entities.UserID) (entities.PairArray, error) {

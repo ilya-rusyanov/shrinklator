@@ -55,7 +55,8 @@ func main() {
 	shortenerService := services.NewShortener(log, repository, algorithm)
 	pingService := services.NewPing(repository)
 	batchService := services.NewBatch(repository, algorithm)
-	userURLsService := services.NewUserURLs(repository)
+	userURLsService, deleteErrorsCh := services.NewUserURLs(repository)
+	go printDeleteErrors(log, deleteErrorsCh)
 
 	shortenHandler := handlers.NewShorten(log, shortenerService, config.BasePath)
 	expandHandler := handlers.NewExpand(shortenerService)
