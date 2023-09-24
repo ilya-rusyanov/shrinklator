@@ -9,18 +9,18 @@ import (
 	"go.uber.org/zap"
 )
 
-type shortStorage interface {
+type ShortStorage interface {
 	Put(ctx context.Context, id string, value string, uid *entities.UserID) error
-	ByID(ctx context.Context, id string) (string, error)
+	ByID(ctx context.Context, id string) (entities.ExpandResult, error)
 }
 
 type Shortener struct {
-	storage shortStorage
+	storage ShortStorage
 	algo    Algo
 	log     *logger.Log
 }
 
-func NewShortener(log *logger.Log, storage shortStorage, algorithm Algo) *Shortener {
+func NewShortener(log *logger.Log, storage ShortStorage, algorithm Algo) *Shortener {
 	res := &Shortener{
 		storage: storage,
 		algo:    algorithm,
@@ -39,12 +39,13 @@ func (s *Shortener) Shrink(ctx context.Context, input string, uid *entities.User
 	return short, nil
 }
 
-func (s *Shortener) Expand(ctx context.Context, input string) (string, error) {
-	url, err := s.storage.ByID(ctx, input)
+func (s *Shortener) Expand(ctx context.Context, input string) (entities.ExpandResult, error) {
+	res, err := s.storage.ByID(ctx, input)
 
 	if err != nil {
-		return "", fmt.Errorf("error searching: %w", err)
+		return entities.ExpandResult{},
+			fmt.Errorf("error searching: %w", err)
 	}
 
-	return url, nil
+	return res, nil
 }

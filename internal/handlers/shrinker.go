@@ -8,5 +8,5 @@ import (
 
 type shrinker interface {
 	Shrink(context.Context, string, *entities.UserID) (string, error)
-	Expand(context.Context, string) (string, error)
+	Expand(context.Context, string) (entities.ExpandResult, error)
 }

@@ -110,13 +110,13 @@ VALUES ($1, $2)`)
 	return nil
 }
 
-func (p *Postgres) ByID(ctx context.Context, id string) (string, error) {
+func (p *Postgres) ByID(ctx context.Context, id string) (entities.ExpandResult, error) {
 	row := p.db.QueryRowContext(ctx,
-		`SELECT long FROM shorts WHERE short = $1`, id)
-	var res string
-	row.Scan(&res)
+		`SELECT long, is_deleted FROM shorts WHERE short = $1`, id)
+	var res entities.ExpandResult
+	row.Scan(&res.URL, &res.Removed)
 	if err := row.Err(); err != nil {
-		return "", fmt.Errorf("error fetching record: %w", err)
+		return res, fmt.Errorf("error fetching record: %w", err)
 	}
 	p.log.Debug("successfull record fetch")
 	return res, nil

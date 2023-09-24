@@ -49,7 +49,7 @@ func (s *InMemory) PutBatch(ctx context.Context, data []entities.ShortLongPair) 
 	return fmt.Errorf("TODO")
 }
 
-func (s *InMemory) ByID(ctx context.Context, id string) (string, error) {
+func (s *InMemory) ByID(ctx context.Context, id string) (entities.ExpandResult, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -57,13 +57,13 @@ func (s *InMemory) ByID(ctx context.Context, id string) (string, error) {
 
 	if !ok {
 		s.log.Info("cannot find record", zap.String("id", id))
-		return "", ErrNotFound
+		return entities.ExpandResult{}, ErrNotFound
 	}
 
 	s.log.Info("successuflly found record", zap.String("id", id),
 		zap.String("value", value))
 
-	return value, nil
+	return entities.ExpandResult{URL: value}, nil
 }
 
 func (s *InMemory) ByUID(context.Context, entities.UserID) (entities.PairArray, error) {

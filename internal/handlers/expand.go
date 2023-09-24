@@ -18,13 +18,18 @@ func NewExpand(shrinker shrinker) *Expand {
 func (e *Expand) Handler(rw http.ResponseWriter, r *http.Request) {
 	id := strings.TrimLeft(r.URL.Path, "/")
 
-	url, err := e.shrinker.Expand(r.Context(), id)
+	expandResult, err := e.shrinker.Expand(r.Context(), id)
 
 	if err != nil {
 		http.Error(rw, "not found", http.StatusBadRequest)
 		return
 	}
 
-	rw.Header().Add("Location", url)
+	if expandResult.Removed {
+		http.Error(rw, "entry is removed", http.StatusGone)
+		return
+	}
+
+	rw.Header().Add("Location", expandResult.URL)
 	rw.WriteHeader(http.StatusTemporaryRedirect)
 }
