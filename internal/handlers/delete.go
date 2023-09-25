@@ -8,7 +8,6 @@ import (
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
-	"go.uber.org/zap"
 )
 
 type DeleteService interface {
@@ -28,9 +27,9 @@ func NewDeleteHandler(log *logger.Log, service DeleteService) *Delete {
 }
 
 func (d *Delete) Handler(rw http.ResponseWriter, r *http.Request) {
-	var deleteRequest entities.DeleteRequest
+	var urls []string
 
-	err := json.NewDecoder(r.Body).Decode(&deleteRequest.URLs)
+	err := json.NewDecoder(r.Body).Decode(&urls)
 
 	if err != nil {
 		http.Error(rw,
@@ -47,11 +46,13 @@ func (d *Delete) Handler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deleteRequest.UID = *uid
-
-	d.log.Info("delete request",
-		zap.Strings("urls", deleteRequest.URLs),
-		zap.String("uid", string(deleteRequest.UID)))
+	var deleteRequest entities.DeleteRequest
+	for _, url := range urls {
+		deleteRequest = append(deleteRequest, entities.UserAndShort{
+			URL: url,
+			UID: *uid,
+		})
+	}
 
 	err = d.service.Delete(r.Context(), deleteRequest)
 

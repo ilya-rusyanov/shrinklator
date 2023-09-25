@@ -1,6 +1,8 @@
 package entities
 
-type DeleteRequest struct {
-	URLs []string
-	UID  UserID
+type UserAndShort struct {
+	URL string
+	UID UserID
 }
+
+type DeleteRequest []UserAndShort

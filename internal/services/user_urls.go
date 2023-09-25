@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 )
@@ -15,16 +16,21 @@ type UserURLsRepository interface {
 type UserURLs struct {
 	repo    UserURLsRepository
 	delErrs chan<- error
+	delChan chan entities.DeleteRequest
 }
 
-func NewUserURLs(repo UserURLsRepository) (service *UserURLs,
-	deleteErrors <-chan error) {
+func NewUserURLs(repo UserURLsRepository, ctx context.Context) (
+	service *UserURLs,
+	deleteErrors <-chan error,
+) {
 	de := make(chan error)
 	deleteErrors = de
 	service = &UserURLs{
 		repo:    repo,
 		delErrs: de,
+		delChan: make(chan entities.DeleteRequest),
 	}
+	go service.flushDelete(ctx)
 	return
 }
 
@@ -39,13 +45,40 @@ func (u *UserURLs) URLsForUser(ctx context.Context, uid entities.UserID) (entiti
 }
 
 func (u *UserURLs) Delete(ctx context.Context, req entities.DeleteRequest) error {
-	go func() {
-		err := u.repo.Delete(ctx, req)
-
-		if err != nil {
-			u.delErrs <- err
-		}
-	}()
-
+	u.delChan <- req
 	return nil
+}
+
+func (u *UserURLs) Close() {
+	close(u.delChan)
+}
+
+func (u *UserURLs) flushDelete(ctx context.Context) {
+	ticker := time.NewTicker(10 * time.Second)
+
+	var requests entities.DeleteRequest
+
+loop:
+	for {
+		select {
+		case req, ok := <-u.delChan:
+			if ok {
+				requests = append(requests, req...)
+			}
+		case <-ticker.C:
+			if len(requests) == 0 {
+				continue
+			}
+			err := u.repo.Delete(ctx, requests)
+
+			if err != nil {
+				u.delErrs <- err
+				continue
+			}
+			requests = nil
+		case <-ctx.Done():
+			break loop
+		}
+	}
+	close(u.delErrs)
 }

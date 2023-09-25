@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -46,6 +47,9 @@ func main() {
 		panic(err)
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	factory := storage.Factory{}
 
 	repository := factory.MustInitStorage(*config, log)
@@ -55,7 +59,8 @@ func main() {
 	shortenerService := services.NewShortener(log, repository, algorithm)
 	pingService := services.NewPing(repository)
 	batchService := services.NewBatch(repository, algorithm)
-	userURLsService, deleteErrorsCh := services.NewUserURLs(repository)
+	userURLsService, deleteErrorsCh := services.NewUserURLs(repository, ctx)
+	defer userURLsService.Close()
 	go printDeleteErrors(log, deleteErrorsCh)
 
 	shortenHandler := handlers.NewShorten(log, shortenerService, config.BasePath)
