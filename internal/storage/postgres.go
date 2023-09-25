@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
@@ -155,7 +156,17 @@ func (p *Postgres) ByUID(ctx context.Context,
 }
 
 func (p *Postgres) Delete(ctx context.Context, req entities.DeleteRequest) error {
-	return errors.New("TODO")
+	values := make([]string, len(req))
+	for i, r := range req {
+		values[i] = fmt.Sprintf("( short = '%s' AND user_id = '%s' )", r.URL, r.UID)
+	}
+	cmd :=
+		"UPDATE shorts SET is_deleted = true WHERE " + strings.Join(values, " OR ") + ";"
+	err, _ := p.db.ExecContext(ctx, cmd)
+	if err != nil {
+		return fmt.Errorf("error marking for deletion: %w", err)
+	}
+	return nil
 }
 
 func migrate(ctx context.Context, log *logger.Log, db *sql.DB) error {
