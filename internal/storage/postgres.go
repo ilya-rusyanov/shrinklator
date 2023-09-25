@@ -162,7 +162,7 @@ func (p *Postgres) Delete(ctx context.Context, req entities.DeleteRequest) error
 	}
 	cmd :=
 		"UPDATE shorts SET is_deleted = true WHERE " + strings.Join(values, " OR ") + ";"
-	err, _ := p.db.ExecContext(ctx, cmd)
+	_, err := p.db.ExecContext(ctx, cmd)
 	if err != nil {
 		return fmt.Errorf("error marking for deletion: %w", err)
 	}
