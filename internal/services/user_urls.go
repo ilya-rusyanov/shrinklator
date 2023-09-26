@@ -66,19 +66,29 @@ loop:
 				requests = append(requests, req...)
 			}
 		case <-ticker.C:
-			if len(requests) == 0 {
-				continue
-			}
-			err := u.repo.Delete(ctx, requests)
-
+			err := u.feed(ctx, requests)
 			if err != nil {
 				u.delErrs <- err
-				continue
 			}
 			requests = nil
 		case <-ctx.Done():
+			tempCtx, cancel := context.WithTimeout(context.TODO(), 1*time.Minute)
+			defer cancel()
+			err := u.feed(tempCtx, requests)
+			if err != nil {
+				u.delErrs <- err
+			}
+			requests = nil
 			break loop
 		}
 	}
 	close(u.delErrs)
+}
+
+func (u *UserURLs) feed(ctx context.Context, requests entities.DeleteRequest) error {
+	if len(requests) == 0 {
+		return nil
+	}
+	err := u.repo.Delete(ctx, requests)
+	return err
 }
