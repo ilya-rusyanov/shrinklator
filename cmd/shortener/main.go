@@ -40,7 +40,7 @@ func newRouter(log *logger.Log, shortenHandler http.HandlerFunc,
 
 func main() {
 	config := config.New()
-	config.Parse()
+	config.MustParse()
 
 	log, err := logger.NewLogger(config.LogLevel)
 	if err != nil {
@@ -59,7 +59,7 @@ func main() {
 	shortenerService := services.NewShortener(log, repository, algorithm)
 	pingService := services.NewPing(repository)
 	batchService := services.NewBatch(repository, algorithm)
-	userURLsService, deleteErrorsCh := services.NewUserURLs(repository, ctx)
+	userURLsService, deleteErrorsCh := services.NewUserURLs(ctx, repository, config.DelBufSize)
 	defer userURLsService.Close()
 	go printDeleteErrors(log, deleteErrorsCh)
 

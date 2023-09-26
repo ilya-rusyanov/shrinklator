@@ -19,7 +19,7 @@ type UserURLs struct {
 	delChan chan entities.DeleteRequest
 }
 
-func NewUserURLs(repo UserURLsRepository, ctx context.Context) (
+func NewUserURLs(ctx context.Context, repo UserURLsRepository, bufsize int) (
 	service *UserURLs,
 	deleteErrors <-chan error,
 ) {
@@ -28,7 +28,7 @@ func NewUserURLs(repo UserURLsRepository, ctx context.Context) (
 	service = &UserURLs{
 		repo:    repo,
 		delErrs: de,
-		delChan: make(chan entities.DeleteRequest),
+		delChan: make(chan entities.DeleteRequest, bufsize),
 	}
 	go service.flushDelete(ctx)
 	return
