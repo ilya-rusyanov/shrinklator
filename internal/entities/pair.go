@@ -1,8 +1,8 @@
 package entities
 
 type ShortLongPair struct {
-	Short string
-	Long  string
+	Short string `json:"short_url"`
+	Long  string `json:"original_url"`
 }
 
 type BatchRequest struct {
@@ -14,3 +14,5 @@ type BatchResponse struct {
 	ID       string `json:"correlation_id"`
 	ShortURL string `json:"short_url"`
 }
+
+type PairArray []ShortLongPair

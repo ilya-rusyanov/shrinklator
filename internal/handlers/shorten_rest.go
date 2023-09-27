@@ -51,8 +51,8 @@ func (s *ShortenREST) Handler(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	status := http.StatusCreated
-
-	short, err := s.shrinker.Shrink(r.Context(), shortenRequest.URL)
+	uid := getUID(r.Context())
+	short, err := s.shrinker.Shrink(r.Context(), shortenRequest.URL, uid)
 	if err != nil {
 		if short, err = handleAlreadyExists(err, &status); err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)

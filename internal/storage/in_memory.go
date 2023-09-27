@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -26,7 +27,7 @@ func NewInMemory(log *logger.Log) *InMemory {
 func (s *InMemory) MustClose() {
 }
 
-func (s *InMemory) Put(ctx context.Context, id, value string) error {
+func (s *InMemory) Put(ctx context.Context, id, value string, uid *entities.UserID) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -48,7 +49,7 @@ func (s *InMemory) PutBatch(ctx context.Context, data []entities.ShortLongPair) 
 	return fmt.Errorf("TODO")
 }
 
-func (s *InMemory) ByID(ctx context.Context, id string) (string, error) {
+func (s *InMemory) ByID(ctx context.Context, id string) (entities.ExpandResult, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -56,13 +57,21 @@ func (s *InMemory) ByID(ctx context.Context, id string) (string, error) {
 
 	if !ok {
 		s.log.Info("cannot find record", zap.String("id", id))
-		return "", ErrNotFound
+		return entities.ExpandResult{}, ErrNotFound
 	}
 
 	s.log.Info("successuflly found record", zap.String("id", id),
 		zap.String("value", value))
 
-	return value, nil
+	return entities.ExpandResult{URL: value}, nil
+}
+
+func (s *InMemory) ByUID(context.Context, entities.UserID) (entities.PairArray, error) {
+	return nil, errors.New("TODO")
+}
+
+func (s *InMemory) Delete(context.Context, entities.DeleteRequest) error {
+	return errors.New("TODO")
 }
 
 func (s *InMemory) Ping(context.Context) error {

@@ -7,9 +7,11 @@ import (
 )
 
 type Interface interface {
-	Put(ctx context.Context, id, value string) error
+	Put(ctx context.Context, id, value string, uid *entities.UserID) error
 	PutBatch(context.Context, []entities.ShortLongPair) error
-	ByID(ctx context.Context, id string) (string, error)
+	ByID(ctx context.Context, id string) (entities.ExpandResult, error)
+	ByUID(context.Context, entities.UserID) (entities.PairArray, error)
+	Delete(context.Context, entities.DeleteRequest) error
 	MustClose()
 	Ping(context.Context) error
 }

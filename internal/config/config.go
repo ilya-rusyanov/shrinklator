@@ -2,7 +2,9 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -13,6 +15,7 @@ type Config struct {
 	StoreInFile     bool
 	DSN             string
 	StoreInDB       bool
+	DelBufSize      int
 }
 
 func New() *Config {
@@ -27,10 +30,12 @@ func New() *Config {
 	flag.StringVar(&res.DSN, "d",
 		"",
 		"data source name")
+	flag.IntVar(&res.DelBufSize, "s", 10,
+		"how many delete requests to buffer")
 	return &res
 }
 
-func (c *Config) Parse() {
+func (c *Config) MustParse() {
 	flag.Parse()
 
 	if val, ok := os.LookupEnv("SERVER_ADDRESS"); ok {
@@ -51,6 +56,14 @@ func (c *Config) Parse() {
 
 	if val := os.Getenv("DATABASE_DSN"); val != "" {
 		c.DSN = val
+	}
+
+	if val := os.Getenv("DELETE_BUF_SIZE"); len(val) > 0 {
+		var err error
+		c.DelBufSize, err = strconv.Atoi(val)
+		if err != nil {
+			panic(fmt.Errorf("failed to parse delete buf size: %w", err))
+		}
 	}
 
 	if c.DSN != "" {

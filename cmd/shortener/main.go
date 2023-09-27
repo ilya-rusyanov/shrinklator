@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -13,30 +14,41 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 )
 
+const tokenKey string = "this is security flaw"
+const accessCookieName string = "access_token"
+
 func newRouter(log *logger.Log, shortenHandler http.HandlerFunc,
 	expandHandler http.HandlerFunc,
 	restShortener http.HandlerFunc,
 	pingHandler http.HandlerFunc,
-	batchHandler http.HandlerFunc) chi.Router {
+	batchHandler http.HandlerFunc,
+	userURLs http.HandlerFunc,
+	del http.HandlerFunc) chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.NewLogger(log).Middleware())
 	r.Use(middleware.Gzip)
+	r.Use(middleware.NewPseudoAuth(log, tokenKey, accessCookieName).Middleware)
 	r.Post("/", shortenHandler)
 	r.Get("/{id}", expandHandler)
 	r.Post("/api/shorten", restShortener)
 	r.Get("/ping", pingHandler)
 	r.Post("/api/shorten/batch", batchHandler)
+	r.Get("/api/user/urls", userURLs)
+	r.Delete("/api/user/urls", del)
 	return r
 }
 
 func main() {
 	config := config.New()
-	config.Parse()
+	config.MustParse()
 
 	log, err := logger.NewLogger(config.LogLevel)
 	if err != nil {
 		panic(err)
 	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	factory := storage.Factory{}
 
@@ -44,9 +56,12 @@ func main() {
 	defer repository.MustClose()
 	algorithm := services.MD5Algo
 
-	shortenerService := services.NewShortener(repository, algorithm)
+	shortenerService := services.NewShortener(log, repository, algorithm)
 	pingService := services.NewPing(repository)
 	batchService := services.NewBatch(repository, algorithm)
+	userURLsService, deleteErrorsCh := services.NewUserURLs(ctx, repository, config.DelBufSize)
+	defer userURLsService.Close()
+	go printDeleteErrors(log, deleteErrorsCh)
 
 	shortenHandler := handlers.NewShorten(log, shortenerService, config.BasePath)
 	expandHandler := handlers.NewExpand(shortenerService)
@@ -54,6 +69,8 @@ func main() {
 		config.BasePath)
 	pingHandler := handlers.NewPing(log, pingService)
 	batchHandler := handlers.NewBatchShorten(log, batchService, config.BasePath)
+	userURLsHandler := handlers.NewUserURLs(log, userURLsService, config.BasePath)
+	delHandler := handlers.NewDeleteHandler(log, userURLsService)
 
 	router := newRouter(
 		log,
@@ -61,7 +78,9 @@ func main() {
 		expandHandler.Handler,
 		restShortenerHandler.Handler,
 		pingHandler.Handler,
-		batchHandler.Handler)
+		batchHandler.Handler,
+		userURLsHandler.Handler,
+		delHandler.Handler)
 
 	err = server.Run(config.ListenAddr, router)
 	if err != nil {

@@ -27,7 +27,8 @@ func (s *Shorten) Handler(rw http.ResponseWriter, r *http.Request) {
 	sb := &strings.Builder{}
 	io.Copy(sb, r.Body)
 	status := http.StatusCreated
-	short, err := s.shrinker.Shrink(r.Context(), sb.String())
+	uid := getUID(r.Context())
+	short, err := s.shrinker.Shrink(r.Context(), sb.String(), uid)
 	if err != nil {
 		if short, err = handleAlreadyExists(err, &status); err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)

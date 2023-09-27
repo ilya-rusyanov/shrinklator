@@ -54,7 +54,7 @@ func NewFile(log *logger.Log, filename string) (*File, error) {
 	}, nil
 }
 
-func (f *File) Put(ctx context.Context, id, value string) error {
+func (f *File) Put(ctx context.Context, id, value string, uid *entities.UserID) error {
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
 
@@ -69,7 +69,7 @@ func (f *File) PutBatch(ctx context.Context, data []entities.ShortLongPair) erro
 	return fmt.Errorf("TODO")
 }
 
-func (f *File) ByID(ctx context.Context, id string) (string, error) {
+func (f *File) ByID(ctx context.Context, id string) (entities.ExpandResult, error) {
 	f.mutex.RLock()
 	defer f.mutex.RUnlock()
 
@@ -77,13 +77,21 @@ func (f *File) ByID(ctx context.Context, id string) (string, error) {
 
 	if !ok {
 		f.log.Info("cannot find record", zap.String("id", id))
-		return "", ErrNotFound
+		return entities.ExpandResult{}, ErrNotFound
 	}
 
 	f.log.Info("successuflly found record", zap.String("id", id),
 		zap.String("value", value))
 
-	return value, nil
+	return entities.ExpandResult{URL: value}, nil
+}
+
+func (f *File) ByUID(context.Context, entities.UserID) (entities.PairArray, error) {
+	return nil, errors.New("TODO")
+}
+
+func (f *File) Delete(context.Context, entities.DeleteRequest) error {
+	return errors.New("TODO")
 }
 
 func (f *File) MustClose() {

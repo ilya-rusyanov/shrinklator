@@ -41,7 +41,7 @@ func TestShortenHandler(t *testing.T) {
 		t.Run(test.testName, func(t *testing.T) {
 			noLog := zap.NewNop()
 			storage := storage.NewInMemory(noLog)
-			model := services.NewShortener(storage, services.MD5Algo)
+			model := services.NewShortener(noLog, storage, services.MD5Algo)
 
 			shortenHandler := NewShorten(noLog, model,
 				"http://localhost:8080")

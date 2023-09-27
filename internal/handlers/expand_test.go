@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 	"github.com/ilya-rusyanov/shrinklator/internal/services"
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
 
@@ -50,13 +51,16 @@ func TestExpandHandler(t *testing.T) {
 		},
 	}
 
-	storage := storage.NewInMemory(zap.NewNop())
+	var someUser *entities.UserID
+
+	noLog := zap.NewNop()
+	storage := storage.NewInMemory(noLog)
 	storage.Put(context.TODO(),
-		"664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru")
+		"664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru", someUser)
 
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
-			model := services.NewShortener(storage, services.MD5Algo)
+			model := services.NewShortener(noLog, storage, services.MD5Algo)
 
 			handler := NewExpand(model)
 
