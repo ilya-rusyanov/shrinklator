@@ -70,7 +70,7 @@ loop:
 			if err != nil {
 				u.delErrs <- err
 			}
-			requests = requests[:0]
+			requests = nil
 		case <-ctx.Done():
 			tempCtx, cancel := context.WithTimeout(context.TODO(), 1*time.Minute)
 			defer cancel()
@@ -78,7 +78,7 @@ loop:
 			if err != nil {
 				u.delErrs <- err
 			}
-			requests = requests[:0]
+			requests = nil
 			break loop
 		}
 	}
