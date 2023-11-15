@@ -27,8 +27,8 @@ func newRouter(log *logger.Log, shortenHandler http.HandlerFunc,
 	del http.HandlerFunc) chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.NewLogger(log).Middleware())
-	r.Use(middleware.Gzip)
 	r.Use(middleware.NewPseudoAuth(log, tokenKey, accessCookieName).Middleware)
+	r.Use(middleware.Gzip)
 	r.Mount("/debug", chiware.Profiler())
 	r.Post("/", shortenHandler)
 	r.Get("/{id}", expandHandler)

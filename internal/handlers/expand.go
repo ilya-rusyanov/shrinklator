@@ -30,6 +30,7 @@ func (e *Expand) Handler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rw.Header().Set("Content-Type", "text/plain")
 	rw.Header().Add("Location", expandResult.URL)
 	rw.WriteHeader(http.StatusTemporaryRedirect)
 }

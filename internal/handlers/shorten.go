@@ -28,6 +28,7 @@ func (s *Shorten) Handler(rw http.ResponseWriter, r *http.Request) {
 	io.Copy(sb, r.Body)
 	status := http.StatusCreated
 	uid := getUID(r.Context())
+	s.log.Sugar().Infof("request to shorten %q with headers %#v", sb.String(), r.Header)
 	short, err := s.shrinker.Shrink(r.Context(), sb.String(), uid)
 	if err != nil {
 		if short, err = handleAlreadyExists(err, &status); err != nil {
@@ -40,6 +41,7 @@ func (s *Shorten) Handler(rw http.ResponseWriter, r *http.Request) {
 
 	result := s.basePath + "/" + short
 
+	rw.Header().Set("Content-Type", "text/plain")
 	rw.WriteHeader(status)
 	s.respondWithString(rw, result)
 }
