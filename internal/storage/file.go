@@ -17,6 +17,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// File - file storage
 type File struct {
 	data  map[string]string
 	mutex sync.RWMutex
@@ -30,6 +31,7 @@ type dto struct {
 	Long  string `json:"original_url"`
 }
 
+// NewFile constructs File object
 func NewFile(log *logger.Log, filename string) (*File, error) {
 	dataSource, err := os.OpenFile(filename,
 		os.O_RDWR|os.O_APPEND|os.O_CREATE,
@@ -54,6 +56,7 @@ func NewFile(log *logger.Log, filename string) (*File, error) {
 	}, nil
 }
 
+// Put adds antry
 func (f *File) Put(ctx context.Context, id, value string, uid *entities.UserID) error {
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
@@ -65,10 +68,12 @@ func (f *File) Put(ctx context.Context, id, value string, uid *entities.UserID) 
 	return f.fileStore(id, value)
 }
 
+// PutBatch adds multiple entries
 func (f *File) PutBatch(ctx context.Context, data []entities.ShortLongPair) error {
 	return fmt.Errorf("TODO")
 }
 
+// ByID searches entry by identifier
 func (f *File) ByID(ctx context.Context, id string) (entities.ExpandResult, error) {
 	f.mutex.RLock()
 	defer f.mutex.RUnlock()
@@ -86,20 +91,24 @@ func (f *File) ByID(ctx context.Context, id string) (entities.ExpandResult, erro
 	return entities.ExpandResult{URL: value}, nil
 }
 
+// ByUID searches entry by user identifier
 func (f *File) ByUID(context.Context, entities.UserID) (entities.PairArray, error) {
 	return nil, errors.New("TODO")
 }
 
+// Delete deletes entry
 func (f *File) Delete(context.Context, entities.DeleteRequest) error {
 	return errors.New("TODO")
 }
 
+// MustClose finalizes storage
 func (f *File) MustClose() {
 	if err := f.file.Close(); err != nil {
 		panic(fmt.Errorf("error closing file: %w", err))
 	}
 }
 
+// Ping checks accessibility of storage
 func (f *File) Ping(context.Context) error {
 	return nil
 }

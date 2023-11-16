@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// Logger - middleware for logging HTTP requests
 type Logger struct {
 	log *logger.Log
 }
@@ -26,12 +27,14 @@ type (
 	}
 )
 
+// NewLogger constructs Logger objects
 func NewLogger(log *logger.Log) *Logger {
 	return &Logger{
 		log: log,
 	}
 }
 
+// Middleware creates actual middleware
 func (l *Logger) Middleware() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
@@ -68,6 +71,7 @@ func (l *Logger) Middleware() func(next http.Handler) http.Handler {
 	}
 }
 
+// Write writes original response
 func (r *loggingResponseWriter) Write(b []byte) (int, error) {
 	// записываем ответ, используя оригинальный http.ResponseWriter
 	size, err := r.ResponseWriter.Write(b)
@@ -75,6 +79,7 @@ func (r *loggingResponseWriter) Write(b []byte) (int, error) {
 	return size, err
 }
 
+// WriteHeader writes header
 func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	// записываем код статуса, используя оригинальный http.ResponseWriter
 	r.ResponseWriter.WriteHeader(statusCode)

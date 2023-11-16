@@ -10,12 +10,14 @@ import (
 	"go.uber.org/zap"
 )
 
+// ShortenREST - handler for JSON shorten requests
 type ShortenREST struct {
 	shrinker shrinker
 	basePath string
 	log      *logger.Log
 }
 
+// NewShortenREST constructs ShortenREST objects
 func NewShortenREST(log *logger.Log, shrinker shrinker, basePath string) *ShortenREST {
 	return &ShortenREST{
 		shrinker: shrinker,
@@ -24,6 +26,7 @@ func NewShortenREST(log *logger.Log, shrinker shrinker, basePath string) *Shorte
 	}
 }
 
+// Handler handles HTTP requests
 func (s *ShortenREST) Handler(rw http.ResponseWriter, r *http.Request) {
 	buf := bytes.Buffer{}
 	var (

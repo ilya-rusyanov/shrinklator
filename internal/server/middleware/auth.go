@@ -15,6 +15,7 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 )
 
+// PseudoAuth middleware for authenticating users
 type PseudoAuth struct {
 	log        *logger.Log
 	key        string
@@ -22,6 +23,7 @@ type PseudoAuth struct {
 	expiration time.Duration
 }
 
+// NewPseudoAuth constructs PseudoAuth objects
 func NewPseudoAuth(log *logger.Log, key, cookieName string) *PseudoAuth {
 	return &PseudoAuth{
 		log:        log,
@@ -31,6 +33,7 @@ func NewPseudoAuth(log *logger.Log, key, cookieName string) *PseudoAuth {
 	}
 }
 
+// Middleware creates middleware
 func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie(a.cookieName)

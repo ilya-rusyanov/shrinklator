@@ -6,6 +6,7 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 )
 
+// Interface - common storage interface
 type Interface interface {
 	Put(ctx context.Context, id, value string, uid *entities.UserID) error
 	PutBatch(context.Context, []entities.ShortLongPair) error

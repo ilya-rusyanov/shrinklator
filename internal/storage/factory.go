@@ -7,9 +7,11 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 )
 
+// Factory - application storage factory
 type Factory struct {
 }
 
+// MustInitStorage creates storage or panics
 func (f *Factory) MustInitStorage(config config.Config, log *logger.Log) Interface {
 	switch {
 	case config.StoreInDB:

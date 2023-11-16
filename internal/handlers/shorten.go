@@ -9,12 +9,14 @@ import (
 	"go.uber.org/zap"
 )
 
+// Shorten - shortens URL to plain text
 type Shorten struct {
 	shrinker shrinker
 	basePath string
 	log      *logger.Log
 }
 
+// NewShorten constructs Shorten handler
 func NewShorten(log *logger.Log, shrinker shrinker, basePath string) *Shorten {
 	return &Shorten{
 		shrinker: shrinker,
@@ -23,6 +25,7 @@ func NewShorten(log *logger.Log, shrinker shrinker, basePath string) *Shorten {
 	}
 }
 
+// Handler handles HTTP requests
 func (s *Shorten) Handler(rw http.ResponseWriter, r *http.Request) {
 	sb := &strings.Builder{}
 	io.Copy(sb, r.Body)

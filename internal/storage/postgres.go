@@ -15,11 +15,13 @@ import (
 	"go.uber.org/zap"
 )
 
+// Postgres - postgres DB storage
 type Postgres struct {
 	db  *sql.DB
 	log *logger.Log
 }
 
+// NewPostgres - constructs Postgres object
 func NewPostgres(ctx context.Context, log *logger.Log, dsn string) (*Postgres, error) {
 	db, err := sql.Open("pgx", dsn)
 
@@ -39,6 +41,7 @@ func NewPostgres(ctx context.Context, log *logger.Log, dsn string) (*Postgres, e
 	}, nil
 }
 
+// Ping checks database availability
 func (p *Postgres) Ping(ctx context.Context) error {
 	err := p.db.PingContext(ctx)
 
@@ -50,6 +53,7 @@ func (p *Postgres) Ping(ctx context.Context) error {
 	return nil
 }
 
+// MustClose finalizes database or panics
 func (p *Postgres) MustClose() {
 	err := p.db.Close()
 
@@ -58,6 +62,7 @@ func (p *Postgres) MustClose() {
 	}
 }
 
+// Put adds entry
 func (p *Postgres) Put(ctx context.Context, id, value string, uid *entities.UserID) error {
 	_, err := p.db.ExecContext(ctx,
 		`INSERT INTO shorts (short, long, user_id) VALUES ($1, $2, $3)`, id, value, uid)
@@ -82,6 +87,7 @@ func (p *Postgres) Put(ctx context.Context, id, value string, uid *entities.User
 	return nil
 }
 
+// PutBatch adds multiple entries
 func (p *Postgres) PutBatch(ctx context.Context, data []entities.ShortLongPair) error {
 	tx, err := p.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -111,6 +117,7 @@ VALUES ($1, $2)`)
 	return nil
 }
 
+// ByID searches entry by identifier
 func (p *Postgres) ByID(ctx context.Context, id string) (entities.ExpandResult, error) {
 	row := p.db.QueryRowContext(ctx,
 		`SELECT long, is_deleted FROM shorts WHERE short = $1`, id)
@@ -123,6 +130,7 @@ func (p *Postgres) ByID(ctx context.Context, id string) (entities.ExpandResult, 
 	return res, nil
 }
 
+// ByUID searches entries by user identifier
 func (p *Postgres) ByUID(ctx context.Context,
 	uid entities.UserID) (entities.PairArray, error) {
 	p.log.Info("selecting by uid", zap.String("uid", string(uid)))
@@ -155,6 +163,7 @@ func (p *Postgres) ByUID(ctx context.Context,
 	return pairs, nil
 }
 
+// Delete deletes entries
 func (p *Postgres) Delete(ctx context.Context, req entities.DeleteRequest) error {
 	values := make([]string, len(req))
 	for i, r := range req {

@@ -4,8 +4,10 @@ import (
 	"go.uber.org/zap"
 )
 
+// Log - application logger
 type Log = zap.Logger
 
+// NewLogger constructs Log object
 func NewLogger(level string) (*Log, error) {
 	// преобразуем текстовый уровень логирования в zap.AtomicLevel
 	lvl, err := zap.ParseAtomicLevel(level)

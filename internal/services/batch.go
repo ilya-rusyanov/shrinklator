@@ -7,15 +7,18 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 )
 
+// BatchStorage - storage for URLs shortened in batch requests
 type BatchStorage interface {
 	PutBatch(context.Context, []entities.ShortLongPair) error
 }
 
+// Batch - usecase for shortening URLs in batch
 type Batch struct {
 	storage BatchStorage
 	algo    Algo
 }
 
+// NewBatch constructs Batch objects
 func NewBatch(storage BatchStorage, algorithm Algo) *Batch {
 	return &Batch{
 		storage: storage,
@@ -23,6 +26,7 @@ func NewBatch(storage BatchStorage, algorithm Algo) *Batch {
 	}
 }
 
+// BatchShorten bulk shorten URLs
 func (b *Batch) BatchShorten(ctx context.Context,
 	input []entities.BatchRequest) ([]entities.BatchResponse, error) {
 	toStore := make([]entities.ShortLongPair, len(input))

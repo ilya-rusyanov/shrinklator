@@ -10,15 +10,18 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 )
 
+// DeleteService - usecase for URLs deletion
 type DeleteService interface {
 	Delete(context.Context, entities.DeleteRequest) error
 }
 
+// Delete - asynchroniously deletes shotened URLs
 type Delete struct {
 	log     *logger.Log
 	service DeleteService
 }
 
+// NewDeleteHandler constructs Delete handler
 func NewDeleteHandler(log *logger.Log, service DeleteService) *Delete {
 	return &Delete{
 		log:     log,
@@ -26,6 +29,7 @@ func NewDeleteHandler(log *logger.Log, service DeleteService) *Delete {
 	}
 }
 
+// Handler handles HTTP requests
 func (d *Delete) Handler(rw http.ResponseWriter, r *http.Request) {
 	var urls []string
 

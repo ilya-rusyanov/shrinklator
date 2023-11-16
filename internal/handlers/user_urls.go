@@ -11,16 +11,19 @@ import (
 	"go.uber.org/zap"
 )
 
+// URLsService usecase for listing URLs belonging to user
 type URLsService interface {
 	URLsForUser(context.Context, entities.UserID) (entities.PairArray, error)
 }
 
+// UserURLs - lists URLs submitted by user
 type UserURLs struct {
 	log     *logger.Log
 	service URLsService
 	baseURL string
 }
 
+// NewUserURLs constructs UserURLs object
 func NewUserURLs(log *logger.Log, service URLsService,
 	baseURL string) *UserURLs {
 	return &UserURLs{
@@ -30,6 +33,7 @@ func NewUserURLs(log *logger.Log, service URLsService,
 	}
 }
 
+// Handler handles HTTP requests
 func (u *UserURLs) Handler(rw http.ResponseWriter, r *http.Request) {
 	id := getUID(r.Context())
 

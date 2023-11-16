@@ -5,6 +5,7 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 )
 
+// Claims - JWT claims
 type Claims struct {
 	jwt.RegisteredClaims
 	UserID *entities.UserID
