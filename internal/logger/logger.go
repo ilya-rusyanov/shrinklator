@@ -5,7 +5,9 @@ import (
 )
 
 // Log - application logger
-type Log = zap.Logger
+type Log struct {
+	logger *zap.Logger
+}
 
 // NewLogger constructs Log object
 func NewLogger(level string) (*Log, error) {
@@ -23,5 +25,30 @@ func NewLogger(level string) (*Log, error) {
 	if err != nil {
 		return nil, err
 	}
-	return zl, nil
+
+	res := Log{
+		logger: zl,
+	}
+
+	return &res, nil
+}
+
+func (l *Log) Info(args ...any) {
+	l.logger.Sugar().Info(args)
+}
+
+func (l *Log) Infof(s string, args ...any) {
+	l.logger.Sugar().Infof(s, args)
+}
+
+func (l *Log) Error(args ...any) {
+	l.logger.Sugar().Error(args)
+}
+
+func (l *Log) Debug(args ...any) {
+	l.logger.Sugar().Debug(args)
+}
+
+func (l *Log) Warn(args ...any) {
+	l.logger.Sugar().Warn(args)
 }

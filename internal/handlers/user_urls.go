@@ -7,8 +7,6 @@ import (
 	"net/http"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
-	"go.uber.org/zap"
 )
 
 // URLsService usecase for listing URLs belonging to user
@@ -18,13 +16,13 @@ type URLsService interface {
 
 // UserURLs - lists URLs submitted by user
 type UserURLs struct {
-	log     *logger.Log
+	log     Logger
 	service URLsService
 	baseURL string
 }
 
 // NewUserURLs constructs UserURLs object
-func NewUserURLs(log *logger.Log, service URLsService,
+func NewUserURLs(log Logger, service URLsService,
 	baseURL string) *UserURLs {
 	return &UserURLs{
 		log:     log,
@@ -45,7 +43,7 @@ func (u *UserURLs) Handler(rw http.ResponseWriter, r *http.Request) {
 	urls, err := u.service.URLsForUser(r.Context(), *id)
 
 	if err != nil {
-		u.log.Info("failure to fetch URLs", zap.String("err", err.Error()))
+		u.log.Info("failure to fetch URLs: ", err.Error())
 		http.Error(rw, fmt.Sprintf("failed to fetch URLs: %q", err.Error()),
 			http.StatusInternalServerError)
 		return

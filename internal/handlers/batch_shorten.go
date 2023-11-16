@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 )
 
 // BatchServicer - usecase for shortening URLs in bulk
@@ -17,13 +16,13 @@ type BatchServicer interface {
 
 // BatchShorten - bulk shortens URLs
 type BatchShorten struct {
-	log     *logger.Log
+	log     Logger
 	service BatchServicer
 	baseURL string
 }
 
 // NewBatchShorten - constructor for BatchShorten
-func NewBatchShorten(log *logger.Log, service BatchServicer, baseURL string) *BatchShorten {
+func NewBatchShorten(log Logger, service BatchServicer, baseURL string) *BatchShorten {
 	return &BatchShorten{
 		log:     log,
 		service: service,

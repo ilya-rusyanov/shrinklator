@@ -4,13 +4,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"go.uber.org/zap"
 )
 
 // Logger - middleware for logging HTTP requests
 type Logger struct {
-	log *logger.Log
+	log ExternalLogger
 }
 
 type (
@@ -28,7 +27,7 @@ type (
 )
 
 // NewLogger constructs Logger objects
-func NewLogger(log *logger.Log) *Logger {
+func NewLogger(log ExternalLogger) *Logger {
 	return &Logger{
 		log: log,
 	}

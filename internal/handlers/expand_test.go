@@ -12,7 +12,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
 func TestExpandHandler(t *testing.T) {
@@ -53,7 +52,7 @@ func TestExpandHandler(t *testing.T) {
 
 	var someUser *entities.UserID
 
-	noLog := zap.NewNop()
+	noLog := &dummyLogger{}
 	storage := storage.NewInMemory(noLog)
 	storage.Put(context.TODO(),
 		"664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru", someUser)

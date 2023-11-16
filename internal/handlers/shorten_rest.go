@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"go.uber.org/zap"
 )
 
@@ -14,11 +13,11 @@ import (
 type ShortenREST struct {
 	shrinker shrinker
 	basePath string
-	log      *logger.Log
+	log      Logger
 }
 
 // NewShortenREST constructs ShortenREST objects
-func NewShortenREST(log *logger.Log, shrinker shrinker, basePath string) *ShortenREST {
+func NewShortenREST(log Logger, shrinker shrinker, basePath string) *ShortenREST {
 	return &ShortenREST{
 		shrinker: shrinker,
 		basePath: basePath,

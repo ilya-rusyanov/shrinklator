@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"go.uber.org/zap"
 )
 
@@ -13,11 +12,11 @@ import (
 type Shorten struct {
 	shrinker shrinker
 	basePath string
-	log      *logger.Log
+	log      Logger
 }
 
 // NewShorten constructs Shorten handler
-func NewShorten(log *logger.Log, shrinker shrinker, basePath string) *Shorten {
+func NewShorten(log Logger, shrinker shrinker, basePath string) *Shorten {
 	return &Shorten{
 		shrinker: shrinker,
 		basePath: basePath,
@@ -31,7 +30,7 @@ func (s *Shorten) Handler(rw http.ResponseWriter, r *http.Request) {
 	io.Copy(sb, r.Body)
 	status := http.StatusCreated
 	uid := getUID(r.Context())
-	s.log.Sugar().Infof("request to shorten %q with headers %#v", sb.String(), r.Header)
+	s.log.Infof("request to shorten %q with headers %#v", sb.String(), r.Header)
 	short, err := s.shrinker.Shrink(r.Context(), sb.String(), uid)
 	if err != nil {
 		if short, err = handleAlreadyExists(err, &status); err != nil {

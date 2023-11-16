@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-	"go.uber.org/zap"
 )
 
 func TestBatchShorten(t *testing.T) {
@@ -67,8 +66,8 @@ func TestBatchShorten(t *testing.T) {
 				BatchShorten(gomock.Any(), testCase.want.serviceArgument).
 				Return(testCase.serviceReturn, testCase.serviceError)
 
-			noLog := zap.NewNop()
-			handler := NewBatchShorten(noLog, service, "http://localhost")
+			noLog := dummyLogger{}
+			handler := NewBatchShorten(&noLog, service, "http://localhost")
 
 			req, err := http.NewRequest(
 				http.MethodPost,

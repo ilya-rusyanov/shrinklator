@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"go.uber.org/zap"
 )
 
@@ -15,11 +14,11 @@ import (
 type InMemory struct {
 	data  map[string]string
 	mutex sync.RWMutex
-	log   *logger.Log
+	log   Logger
 }
 
 // NewInMemory constructs InMemory objects
-func NewInMemory(log *logger.Log) *InMemory {
+func NewInMemory(log Logger) *InMemory {
 	return &InMemory{
 		data: make(map[string]string),
 		log:  log,

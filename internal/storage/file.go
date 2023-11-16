@@ -12,7 +12,6 @@ import (
 	"sync"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 
 	"go.uber.org/zap"
 )
@@ -21,7 +20,7 @@ import (
 type File struct {
 	data  map[string]string
 	mutex sync.RWMutex
-	log   *logger.Log
+	log   Logger
 	file  io.WriteCloser
 }
 
@@ -32,7 +31,7 @@ type dto struct {
 }
 
 // NewFile constructs File object
-func NewFile(log *logger.Log, filename string) (*File, error) {
+func NewFile(log Logger, filename string) (*File, error) {
 	dataSource, err := os.OpenFile(filename,
 		os.O_RDWR|os.O_APPEND|os.O_CREATE,
 		0640)

@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -18,11 +17,11 @@ import (
 // Postgres - postgres DB storage
 type Postgres struct {
 	db  *sql.DB
-	log *logger.Log
+	log Logger
 }
 
 // NewPostgres - constructs Postgres object
-func NewPostgres(ctx context.Context, log *logger.Log, dsn string) (*Postgres, error) {
+func NewPostgres(ctx context.Context, log Logger, dsn string) (*Postgres, error) {
 	db, err := sql.Open("pgx", dsn)
 
 	if err != nil {
@@ -178,7 +177,7 @@ func (p *Postgres) Delete(ctx context.Context, req entities.DeleteRequest) error
 	return nil
 }
 
-func migrate(ctx context.Context, log *logger.Log, db *sql.DB) error {
+func migrate(ctx context.Context, log Logger, db *sql.DB) error {
 	_, err := db.ExecContext(ctx,
 		`CREATE TABLE IF NOT EXISTS shorts
 (short text, long text UNIQUE, user_id text, is_deleted boolean, PRIMARY KEY (short))`)

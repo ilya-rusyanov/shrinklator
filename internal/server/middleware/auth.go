@@ -12,19 +12,18 @@ import (
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 	"github.com/ilya-rusyanov/shrinklator/internal/handlers"
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 )
 
 // PseudoAuth middleware for authenticating users
 type PseudoAuth struct {
-	log        *logger.Log
+	log        ExternalLogger
 	key        string
 	cookieName string
 	expiration time.Duration
 }
 
 // NewPseudoAuth constructs PseudoAuth objects
-func NewPseudoAuth(log *logger.Log, key, cookieName string) *PseudoAuth {
+func NewPseudoAuth(log ExternalLogger, key, cookieName string) *PseudoAuth {
 	return &PseudoAuth{
 		log:        log,
 		key:        key,
@@ -45,8 +44,7 @@ func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 			*uid = generateID()
 			c, err := a.buildAuthCookie(*uid)
 			if err != nil {
-				a.log.Error("failed to create auth cookie",
-					zap.String("err", err.Error()))
+				a.log.Error("failed to create auth cookie: ", err.Error())
 				http.Error(rw, "cookie creation failure", http.StatusInternalServerError)
 				return
 			} else {
