@@ -33,22 +33,27 @@ func NewLogger(level string) (*Log, error) {
 	return &res, nil
 }
 
+// Info logs with Info severity
 func (l *Log) Info(args ...any) {
 	l.logger.Sugar().Info(args)
 }
 
+// Infof logs with Info severity
 func (l *Log) Infof(s string, args ...any) {
 	l.logger.Sugar().Infof(s, args)
 }
 
+// Error logs with Error severity
 func (l *Log) Error(args ...any) {
 	l.logger.Sugar().Error(args)
 }
 
+// Debug logs with Debug severity
 func (l *Log) Debug(args ...any) {
 	l.logger.Sugar().Debug(args)
 }
 
+// Warn logs with Warn severity
 func (l *Log) Warn(args ...any) {
 	l.logger.Sugar().Warn(args)
 }
