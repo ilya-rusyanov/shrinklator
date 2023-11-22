@@ -3,8 +3,6 @@ package handlers
 import (
 	"context"
 	"net/http"
-
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 )
 
 // Pinger - Ping use case
@@ -14,12 +12,12 @@ type Pinger interface {
 
 // PingHandler - pings the service to check it's working capacity
 type PingHandler struct {
-	log    *logger.Log
+	log    Logger
 	pinger Pinger
 }
 
 // NewPing constructs Ping handler
-func NewPing(log *logger.Log, pinger Pinger) *PingHandler {
+func NewPing(log Logger, pinger Pinger) *PingHandler {
 	return &PingHandler{
 		log:    log,
 		pinger: pinger,

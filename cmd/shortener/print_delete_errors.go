@@ -1,12 +1,12 @@
 package main
 
-import (
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
-	"go.uber.org/zap"
-)
+type Logger interface {
+	Error(...any)
+	Info(...any)
+}
 
-func printDeleteErrors(log *logger.Log, ch <-chan error) {
+func printDeleteErrors(log Logger, ch <-chan error) {
 	for err := range ch {
-		log.Error("error while deleting", zap.String("message", err.Error()))
+		log.Error("error while deleting: ", err.Error())
 	}
 }

@@ -18,7 +18,7 @@ import (
 const tokenKey string = "this is security flaw"
 const accessCookieName string = "access_token"
 
-func newRouter(log *logger.Log, shortenHandler http.HandlerFunc,
+func newRouter(log Logger, shortenHandler http.HandlerFunc,
 	expandHandler http.HandlerFunc,
 	restShortener http.HandlerFunc,
 	pingHandler http.HandlerFunc,
