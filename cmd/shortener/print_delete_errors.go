@@ -1,5 +1,6 @@
 package main
 
+// Logging object
 type Logger interface {
 	Error(...any)
 	Info(...any)
