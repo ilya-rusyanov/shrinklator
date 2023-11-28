@@ -4,5 +4,6 @@ package storage
 type Logger interface {
 	Info(...any)
 	Warn(...any)
+	Warnf(string, ...any)
 	Debug(...any)
 }

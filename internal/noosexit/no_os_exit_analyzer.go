@@ -51,7 +51,6 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			}
 
 			if s.Sel.Name == "Exit" {
-				//pos := s.Sel.NamePos
 				pass.Reportf(c.Pos(), "os.Exit calls are prohibited in main()")
 			}
 

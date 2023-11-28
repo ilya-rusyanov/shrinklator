@@ -27,7 +27,9 @@ func NewShorten(log Logger, shrinker shrinker, basePath string) *Shorten {
 // Handler handles HTTP requests
 func (s *Shorten) Handler(rw http.ResponseWriter, r *http.Request) {
 	sb := &strings.Builder{}
-	io.Copy(sb, r.Body)
+	if _, err := io.Copy(sb, r.Body); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+	}
 	status := http.StatusCreated
 	uid := getUID(r.Context())
 	s.log.Infof("request to shorten %q with headers %#v", sb.String(), r.Header)

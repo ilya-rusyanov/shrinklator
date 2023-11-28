@@ -4,4 +4,5 @@ package middleware
 type ExternalLogger interface {
 	Info(...any)
 	Error(...any)
+	Warnf(string, ...any)
 }

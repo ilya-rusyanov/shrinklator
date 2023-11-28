@@ -31,9 +31,9 @@ func TestGzipCompression(t *testing.T) {
 				require.NoError(t, err)
 			})
 
-		handler := Gzip(webhook)
+		handler := NewGzip(&dummyLogger{})
 
-		srv := httptest.NewServer(handler)
+		srv := httptest.NewServer(handler.Middleware(webhook))
 		defer srv.Close()
 
 		buf := bytes.NewBuffer(nil)
@@ -51,7 +51,10 @@ func TestGzipCompression(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 
-		defer resp.Body.Close()
+		defer func() {
+			e := resp.Body.Close()
+			require.NoError(t, e)
+		}()
 
 		assert.Equal(t, requestBody, received)
 	})
@@ -65,9 +68,9 @@ func TestGzipCompression(t *testing.T) {
 				require.NoError(t, err)
 			})
 
-		handler := Gzip(webhook)
+		handler := NewGzip(&dummyLogger{})
 
-		srv := httptest.NewServer(handler)
+		srv := httptest.NewServer(handler.Middleware(webhook))
 		defer srv.Close()
 
 		buf := bytes.NewBufferString(requestBody)
@@ -79,7 +82,10 @@ func TestGzipCompression(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 
-		defer resp.Body.Close()
+		defer func() {
+			e := resp.Body.Close()
+			require.NoError(t, e)
+		}()
 
 		zr, err := gzip.NewReader(resp.Body)
 		require.NoError(t, err)

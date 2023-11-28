@@ -57,3 +57,8 @@ func (l *Log) Debug(args ...any) {
 func (l *Log) Warn(args ...any) {
 	l.logger.Sugar().Warn(args)
 }
+
+// Warnf logs with Warn severity
+func (l *Log) Warnf(s string, args ...any) {
+	l.logger.Sugar().Warnf(s, args)
+}

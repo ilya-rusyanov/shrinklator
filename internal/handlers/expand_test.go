@@ -54,8 +54,9 @@ func TestExpandHandler(t *testing.T) {
 
 	noLog := &dummyLogger{}
 	storage := storage.NewInMemory(noLog)
-	storage.Put(context.TODO(),
+	e := storage.Put(context.TODO(),
 		"664b8054bac1af66baafa7a01acd15ee", "http://yandex.ru", someUser)
+	require.NoError(t, e)
 
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {

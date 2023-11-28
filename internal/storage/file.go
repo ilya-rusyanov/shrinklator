@@ -159,13 +159,13 @@ func readAll(from io.Reader) (map[string]string, error) {
 			return result, fmt.Errorf("error reading line: %w", err)
 		}
 
-		dto := dto{}
-		err = json.Unmarshal(data, &dto)
+		obj := dto{}
+		err = json.Unmarshal(data, &obj)
 		if err != nil {
 			return result, fmt.Errorf("error unmarshaling JSON: %w", err)
 		}
 
-		result[dto.Short] = dto.Long
+		result[obj.Short] = obj.Long
 		lastID++
 	}
 

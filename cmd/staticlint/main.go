@@ -1,10 +1,16 @@
 package main
 
 import (
+	gocritic "github.com/go-critic/go-critic/checkers/analyzer"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/multichecker"
+	"golang.org/x/tools/go/analysis/passes/printf"
+	"golang.org/x/tools/go/analysis/passes/shadow"
+	"golang.org/x/tools/go/analysis/passes/structtag"
+	"honnef.co/go/tools/staticcheck"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/noosexit"
+	"github.com/kisielk/errcheck/errcheck"
 )
 
 // ConfigData описывает структуру файла конфигурации.
@@ -113,22 +119,22 @@ func main() {
 
 	mychecks := []*analysis.Analyzer{
 		noosexit.Analyzer,
-		//printf.Analyzer,
-		//shadow.Analyzer,
-		//structtag.Analyzer,
-		//errcheck.Analyzer,
-		//gocritic.Analyzer,
+		printf.Analyzer,
+		shadow.Analyzer,
+		structtag.Analyzer,
+		errcheck.Analyzer,
+		gocritic.Analyzer,
 	}
 	checks := make(map[string]bool)
 	for _, v := range cfg.Staticcheck {
 		checks[v] = true
 	}
 
-	//for _, v := range staticcheck.Analyzers {
-	//	if checks[v.Analyzer.Name] {
-	//		mychecks = append(mychecks, v.Analyzer)
-	//	}
-	//}
+	for _, v := range staticcheck.Analyzers {
+		if checks[v.Analyzer.Name] {
+			mychecks = append(mychecks, v.Analyzer)
+		}
+	}
 	multichecker.Main(
 		mychecks...,
 	)

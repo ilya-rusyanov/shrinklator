@@ -71,18 +71,23 @@ func (p *Postgres) Put(ctx context.Context, id, value string, uid *entities.User
 			row := p.db.QueryRowContext(ctx,
 				`SELECT short FROM shorts WHERE long = $1`, value)
 			var short string
-			row.Scan(&short)
-			if err := row.Err(); err != nil {
-				return fmt.Errorf("error scanning value: %w", err)
+			if e := row.Scan(&short); e != nil {
+				return fmt.Errorf("error scanning value: %w", e)
+			}
+			if e := row.Err(); e != nil {
+				return fmt.Errorf("error scanning value: %w", e)
 			}
 
 			return ErrAlreadyExists{
 				StoredValue: short,
 			}
 		}
+
 		return fmt.Errorf("error writing to DB: %w", err)
 	}
+
 	p.log.Debug("successfull write to database")
+
 	return nil
 }
 
@@ -92,18 +97,26 @@ func (p *Postgres) PutBatch(ctx context.Context, data []entities.ShortLongPair) 
 	if err != nil {
 		return fmt.Errorf("failed to create transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() {
+		if e := tx.Rollback(); e != nil {
+			p.log.Warnf("rollback error: %q", e.Error())
+		}
+	}()
 
 	stmt, err := tx.PrepareContext(ctx, `INSERT INTO shorts (short, long)
 VALUES ($1, $2)`)
 	if err != nil {
 		return fmt.Errorf("failed to prepare statement: %w", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if e := stmt.Close(); e != nil {
+			p.log.Warnf("stmt close error: %q", e.Error())
+		}
+	}()
 
 	for _, pair := range data {
-		_, err := stmt.ExecContext(ctx, pair.Short, pair.Long)
-		if err != nil {
+		_, e := stmt.ExecContext(ctx, pair.Short, pair.Long)
+		if e != nil {
 			return fmt.Errorf("failed to execute statement in transaction: %w", err)
 		}
 	}
@@ -118,10 +131,13 @@ VALUES ($1, $2)`)
 
 // ByID searches entry by identifier
 func (p *Postgres) ByID(ctx context.Context, id string) (entities.ExpandResult, error) {
+	var res entities.ExpandResult
+
 	row := p.db.QueryRowContext(ctx,
 		`SELECT long, is_deleted FROM shorts WHERE short = $1`, id)
-	var res entities.ExpandResult
-	row.Scan(&res.URL, &res.Removed)
+	if err := row.Scan(&res.URL, &res.Removed); err != nil {
+		return res, fmt.Errorf("row scan error: %w", err)
+	}
 	if err := row.Err(); err != nil {
 		return res, fmt.Errorf("error fetching record: %w", err)
 	}
@@ -138,7 +154,11 @@ func (p *Postgres) ByUID(ctx context.Context,
 	if err != nil {
 		return nil, fmt.Errorf("error selecting rows: %w", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if e := rows.Close(); e != nil {
+			p.log.Warnf("error closing rows: %q", e.Error())
+		}
+	}()
 
 	var pairs entities.PairArray
 
@@ -180,7 +200,11 @@ func (p *Postgres) Delete(ctx context.Context, req entities.DeleteRequest) error
 func migrate(ctx context.Context, log Logger, db *sql.DB) error {
 	_, err := db.ExecContext(ctx,
 		`CREATE TABLE IF NOT EXISTS shorts
-(short text, long text UNIQUE, user_id text, is_deleted boolean, PRIMARY KEY (short))`)
+(short text,
+ long text UNIQUE,
+ user_id text,
+ is_deleted boolean NOT NULL DEFAULT false,
+ PRIMARY KEY (short))`)
 	if err != nil {
 		return fmt.Errorf("failed to create table: %w", err)
 	}

@@ -57,7 +57,10 @@ func TestShortenHandler(t *testing.T) {
 
 			resp, err := server.Client().Do(req)
 			require.NoError(t, err)
-			defer resp.Body.Close()
+			defer func() {
+				e := resp.Body.Close()
+				require.NoError(t, e)
+			}()
 
 			respBody, err := io.ReadAll(resp.Body)
 			require.NoError(t, err)
