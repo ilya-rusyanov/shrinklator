@@ -1,7 +1,28 @@
+/*
+Staticlint performs static lint on go source code.
+
+In order to run checks, execute it the following way:
+
+	go build ./cmd/staticlint && ./staticlint ./.. .  2>&1 | grep -v 'go-build'
+
+To show basic usage add the flag:
+
+	./staticlint --help
+
+There are several types of checks:
+  - SA-checks are from staticcheck project.
+  - no os exit: checks against using os.Exit() calls in main() function
+  - printf: checks consistency of Printf format strings and arguments
+  - shadow: checks for shadowed variables
+  - structtag: checks that struct field tags are well formed
+  - errcheck: checks for unchecked errors in code
+  - gocritic: uses checks currently missing from other linters
+*/
 package main
 
 import (
 	gocritic "github.com/go-critic/go-critic/checkers/analyzer"
+	"github.com/kisielk/errcheck/errcheck"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/multichecker"
 	"golang.org/x/tools/go/analysis/passes/printf"
@@ -10,7 +31,6 @@ import (
 	"honnef.co/go/tools/staticcheck"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/noosexit"
-	"github.com/kisielk/errcheck/errcheck"
 )
 
 // ConfigData описывает структуру файла конфигурации.
