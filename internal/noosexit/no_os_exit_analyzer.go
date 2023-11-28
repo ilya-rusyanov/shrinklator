@@ -34,7 +34,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			continue
 		}
 
-		ast.Inspect(file, func(node ast.Node) bool {
+		ast.Inspect(mainFunc, func(node ast.Node) bool {
 			c, ok := node.(*ast.CallExpr)
 			if !ok {
 				return true
@@ -52,7 +52,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 
 			if s.Sel.Name == "Exit" {
 				//pos := s.Sel.NamePos
-				pass.Reportf(c.Pos(), "os.Exit calls in main() are prohibited")
+				pass.Reportf(c.Pos(), "os.Exit calls are prohibited in main()")
 			}
 
 			return true
