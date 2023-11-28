@@ -6,21 +6,23 @@ import (
 	"net/http"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 )
 
+// BatchServicer - usecase for shortening URLs in bulk
 type BatchServicer interface {
 	BatchShorten(context.Context, []entities.BatchRequest) (
 		[]entities.BatchResponse, error)
 }
 
+// BatchShorten - bulk shortens URLs
 type BatchShorten struct {
-	log     *logger.Log
+	log     Logger
 	service BatchServicer
 	baseURL string
 }
 
-func NewBatchShorten(log *logger.Log, service BatchServicer, baseURL string) *BatchShorten {
+// NewBatchShorten - constructor for BatchShorten
+func NewBatchShorten(log Logger, service BatchServicer, baseURL string) *BatchShorten {
 	return &BatchShorten{
 		log:     log,
 		service: service,
@@ -28,6 +30,7 @@ func NewBatchShorten(log *logger.Log, service BatchServicer, baseURL string) *Ba
 	}
 }
 
+// Handler handles HTTP request
 func (s *BatchShorten) Handler(rw http.ResponseWriter, r *http.Request) {
 	var batchRequest []entities.BatchRequest
 	if err := json.NewDecoder(r.Body).Decode(&batchRequest); err != nil {

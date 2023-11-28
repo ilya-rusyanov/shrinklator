@@ -7,6 +7,7 @@ import (
 	"strconv"
 )
 
+// Config - app configuration
 type Config struct {
 	ListenAddr      string
 	BasePath        string
@@ -18,6 +19,7 @@ type Config struct {
 	DelBufSize      int
 }
 
+// New - constructor
 func New() *Config {
 	res := Config{}
 	flag.StringVar(
@@ -35,6 +37,7 @@ func New() *Config {
 	return &res
 }
 
+// MustParse - parse configuration or panic
 func (c *Config) MustParse() {
 	flag.Parse()
 

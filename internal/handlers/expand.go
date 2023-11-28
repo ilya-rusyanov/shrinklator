@@ -5,16 +5,19 @@ import (
 	"strings"
 )
 
+// Expand - expands shortened URL in plain text
 type Expand struct {
 	shrinker shrinker
 }
 
+// NewExpand constructs Expand objext
 func NewExpand(shrinker shrinker) *Expand {
 	return &Expand{
 		shrinker: shrinker,
 	}
 }
 
+// Handler handles HTTP requests
 func (e *Expand) Handler(rw http.ResponseWriter, r *http.Request) {
 	id := strings.TrimLeft(r.URL.Path, "/")
 
@@ -30,6 +33,7 @@ func (e *Expand) Handler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rw.Header().Set("Content-Type", "text/plain")
 	rw.Header().Add("Location", expandResult.URL)
 	rw.WriteHeader(http.StatusTemporaryRedirect)
 }

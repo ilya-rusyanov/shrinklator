@@ -12,7 +12,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
 func TestShortenRESThandler(t *testing.T) {
@@ -46,10 +45,10 @@ func TestShortenRESThandler(t *testing.T) {
 
 	for _, testCase := range tests {
 		t.Run(testCase.name, func(t *testing.T) {
-			noLog := zap.NewNop()
-			storage := storage.NewInMemory(noLog)
-			service := services.NewShortener(noLog, storage, services.MD5Algo)
-			handler := NewShortenREST(noLog, service, "http://localhost")
+			noLog := dummyLogger{}
+			storage := storage.NewInMemory(&noLog)
+			service := services.NewShortener(&noLog, storage, services.MD5Algo)
+			handler := NewShortenREST(&noLog, service, "http://localhost")
 
 			req, err := http.NewRequest(
 				http.MethodPost,

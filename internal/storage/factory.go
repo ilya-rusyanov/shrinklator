@@ -4,13 +4,14 @@ import (
 	"context"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/config"
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 )
 
+// Factory - application storage factory
 type Factory struct {
 }
 
-func (f *Factory) MustInitStorage(config config.Config, log *logger.Log) Interface {
+// MustInitStorage creates storage or panics
+func (f *Factory) MustInitStorage(config config.Config, log Logger) Interface {
 	switch {
 	case config.StoreInDB:
 		ctx := context.Background()

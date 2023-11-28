@@ -4,7 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
+	chiware "github.com/go-chi/chi/v5/middleware"
 	"github.com/ilya-rusyanov/shrinklator/internal/config"
 	"github.com/ilya-rusyanov/shrinklator/internal/handlers"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
@@ -17,7 +18,7 @@ import (
 const tokenKey string = "this is security flaw"
 const accessCookieName string = "access_token"
 
-func newRouter(log *logger.Log, shortenHandler http.HandlerFunc,
+func newRouter(log Logger, shortenHandler http.HandlerFunc,
 	expandHandler http.HandlerFunc,
 	restShortener http.HandlerFunc,
 	pingHandler http.HandlerFunc,
@@ -26,8 +27,9 @@ func newRouter(log *logger.Log, shortenHandler http.HandlerFunc,
 	del http.HandlerFunc) chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.NewLogger(log).Middleware())
-	r.Use(middleware.Gzip)
 	r.Use(middleware.NewPseudoAuth(log, tokenKey, accessCookieName).Middleware)
+	r.Use(middleware.Gzip)
+	r.Mount("/debug", chiware.Profiler())
 	r.Post("/", shortenHandler)
 	r.Get("/{id}", expandHandler)
 	r.Post("/api/shorten", restShortener)

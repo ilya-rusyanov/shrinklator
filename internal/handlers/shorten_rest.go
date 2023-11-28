@@ -6,17 +6,18 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"go.uber.org/zap"
 )
 
+// ShortenREST - handler for JSON shorten requests
 type ShortenREST struct {
 	shrinker shrinker
 	basePath string
-	log      *logger.Log
+	log      Logger
 }
 
-func NewShortenREST(log *logger.Log, shrinker shrinker, basePath string) *ShortenREST {
+// NewShortenREST constructs ShortenREST objects
+func NewShortenREST(log Logger, shrinker shrinker, basePath string) *ShortenREST {
 	return &ShortenREST{
 		shrinker: shrinker,
 		basePath: basePath,
@@ -24,6 +25,7 @@ func NewShortenREST(log *logger.Log, shrinker shrinker, basePath string) *Shorte
 	}
 }
 
+// Handler handles HTTP requests
 func (s *ShortenREST) Handler(rw http.ResponseWriter, r *http.Request) {
 	buf := bytes.Buffer{}
 	var (

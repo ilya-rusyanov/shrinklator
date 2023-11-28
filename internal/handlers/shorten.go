@@ -5,17 +5,18 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"go.uber.org/zap"
 )
 
+// Shorten - shortens URL to plain text
 type Shorten struct {
 	shrinker shrinker
 	basePath string
-	log      *logger.Log
+	log      Logger
 }
 
-func NewShorten(log *logger.Log, shrinker shrinker, basePath string) *Shorten {
+// NewShorten constructs Shorten handler
+func NewShorten(log Logger, shrinker shrinker, basePath string) *Shorten {
 	return &Shorten{
 		shrinker: shrinker,
 		basePath: basePath,
@@ -23,11 +24,13 @@ func NewShorten(log *logger.Log, shrinker shrinker, basePath string) *Shorten {
 	}
 }
 
+// Handler handles HTTP requests
 func (s *Shorten) Handler(rw http.ResponseWriter, r *http.Request) {
 	sb := &strings.Builder{}
 	io.Copy(sb, r.Body)
 	status := http.StatusCreated
 	uid := getUID(r.Context())
+	s.log.Infof("request to shorten %q with headers %#v", sb.String(), r.Header)
 	short, err := s.shrinker.Shrink(r.Context(), sb.String(), uid)
 	if err != nil {
 		if short, err = handleAlreadyExists(err, &status); err != nil {
@@ -40,6 +43,7 @@ func (s *Shorten) Handler(rw http.ResponseWriter, r *http.Request) {
 
 	result := s.basePath + "/" + short
 
+	rw.Header().Set("Content-Type", "text/plain")
 	rw.WriteHeader(status)
 	s.respondWithString(rw, result)
 }

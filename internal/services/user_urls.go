@@ -8,17 +8,20 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 )
 
+// UserURLsRepository stores URLs by user
 type UserURLsRepository interface {
 	ByUID(context.Context, entities.UserID) (entities.PairArray, error)
 	Delete(context.Context, entities.DeleteRequest) error
 }
 
+// UserURLs - usecase for URLs of a user
 type UserURLs struct {
 	repo    UserURLsRepository
 	delErrs chan<- error
 	delChan chan entities.DeleteRequest
 }
 
+// NewUserURLs constructs UserURLs object
 func NewUserURLs(ctx context.Context, repo UserURLsRepository, bufsize int) (
 	service *UserURLs,
 	deleteErrors <-chan error,
@@ -34,6 +37,7 @@ func NewUserURLs(ctx context.Context, repo UserURLsRepository, bufsize int) (
 	return
 }
 
+// URLsForUser returns URLs of a single user
 func (u *UserURLs) URLsForUser(ctx context.Context, uid entities.UserID) (entities.PairArray, error) {
 	urls, err := u.repo.ByUID(ctx, uid)
 
@@ -44,11 +48,13 @@ func (u *UserURLs) URLsForUser(ctx context.Context, uid entities.UserID) (entiti
 	return urls, nil
 }
 
+// Delete equeues deletion of a user URL
 func (u *UserURLs) Delete(ctx context.Context, req entities.DeleteRequest) error {
 	u.delChan <- req
 	return nil
 }
 
+// Close finalizes object
 func (u *UserURLs) Close() {
 	close(u.delChan)
 }
