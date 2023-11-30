@@ -6,14 +6,13 @@ require (
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-critic/go-critic v0.9.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
-	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.1
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/kisielk/errcheck v1.6.3
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
-	go.uber.org/mock v0.2.0
+	go.uber.org/mock v0.3.0
 	go.uber.org/zap v1.25.0
 	golang.org/x/tools v0.12.1-0.20230825192346-2191a27a6dc5
 	honnef.co/go/tools v0.4.6
