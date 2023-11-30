@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	chiware "github.com/go-chi/chi/v5/middleware"
@@ -41,6 +42,8 @@ func newRouter(log Logger, shortenHandler http.HandlerFunc,
 }
 
 func main() {
+	printBuildInfo(os.Stdout)
+
 	config := config.New()
 	config.MustParse()
 
