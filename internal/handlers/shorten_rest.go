@@ -11,13 +11,13 @@ import (
 
 // ShortenREST - handler for JSON shorten requests
 type ShortenREST struct {
-	shrinker shrinker
+	shrinker Shrinker
 	basePath string
 	log      Logger
 }
 
 // NewShortenREST constructs ShortenREST objects
-func NewShortenREST(log Logger, shrinker shrinker, basePath string) *ShortenREST {
+func NewShortenREST(log Logger, shrinker Shrinker, basePath string) *ShortenREST {
 	return &ShortenREST{
 		shrinker: shrinker,
 		basePath: basePath,

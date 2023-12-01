@@ -10,13 +10,13 @@ import (
 
 // Shorten - shortens URL to plain text
 type Shorten struct {
-	shrinker shrinker
+	shrinker Shrinker
 	basePath string
 	log      Logger
 }
 
 // NewShorten constructs Shorten handler
-func NewShorten(log Logger, shrinker shrinker, basePath string) *Shorten {
+func NewShorten(log Logger, shrinker Shrinker, basePath string) *Shorten {
 	return &Shorten{
 		shrinker: shrinker,
 		basePath: basePath,
