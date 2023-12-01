@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -21,24 +22,33 @@ func TestDelete(t *testing.T) {
 		user entities.UserID
 	}
 
+	anyCalls := func(m *mocks.MockDeleteService) {
+		m.EXPECT().
+			Delete(gomock.Any(), gomock.Any()).
+			AnyTimes()
+	}
+
 	tests := []struct {
-		name  string
-		input input
-		want  int
+		name   string
+		input  input
+		expect func(*mocks.MockDeleteService)
+		want   int
 	}{
 		{
 			name: "broken json",
 			input: input{
 				body: "{",
 			},
-			want: http.StatusBadRequest,
+			expect: anyCalls,
+			want:   http.StatusBadRequest,
 		},
 		{
 			name: "unauthorized user",
 			input: input{
 				body: "null",
 			},
-			want: http.StatusUnauthorized,
+			expect: anyCalls,
+			want:   http.StatusUnauthorized,
 		},
 		{
 			name: "valid user",
@@ -46,7 +56,21 @@ func TestDelete(t *testing.T) {
 				body: "null",
 				user: entities.UserID("2"),
 			},
-			want: http.StatusAccepted,
+			expect: anyCalls,
+			want:   http.StatusAccepted,
+		},
+		{
+			name: "service error",
+			input: input{
+				body: "null",
+				user: entities.UserID("2"),
+			},
+			expect: func(m *mocks.MockDeleteService) {
+				m.EXPECT().
+					Delete(gomock.Any(), gomock.Any()).
+					Return(errors.New("arbitrary error"))
+			},
+			want: http.StatusInternalServerError,
 		},
 		{
 			name: "successfull delete",
@@ -54,7 +78,8 @@ func TestDelete(t *testing.T) {
 				body: `["a", "b", "c"]`,
 				user: entities.UserID("2"),
 			},
-			want: http.StatusAccepted,
+			expect: anyCalls,
+			want:   http.StatusAccepted,
 		},
 	}
 
@@ -64,9 +89,7 @@ func TestDelete(t *testing.T) {
 			defer ctrl.Finish()
 
 			service := mocks.NewMockDeleteService(ctrl)
-			service.EXPECT().
-				Delete(gomock.Any(), gomock.Any()).
-				AnyTimes()
+			tc.expect(service)
 
 			handler := NewDeleteHandler(&dummyLogger{}, service)
 
