@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -8,68 +10,117 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ilya-rusyanov/shrinklator/internal/services"
-	"github.com/ilya-rusyanov/shrinklator/internal/storage"
+	"github.com/ilya-rusyanov/shrinklator/internal/entities"
+	"github.com/ilya-rusyanov/shrinklator/internal/handlers/mocks"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
 func TestShortenHandler(t *testing.T) {
+	type input struct {
+		body string
+		uid  *entities.UserID
+	}
+
 	type want struct {
-		code     int
-		response string
+		code int
+		body string
+	}
+
+	someUID := func() *entities.UserID {
+		id := entities.UserID("a")
+		return &id
 	}
 
 	tests := []struct {
 		testName string
-		body     string
+		input    input
+		expect   func(*mocks.MockShrinker)
 		want     want
 	}{
 		{
-			testName: "url shortening",
-			body:     "http://yandex.ru",
+			testName: "service conflict error",
+			input: input{
+				body: "http://yandex.ru",
+			},
+			expect: func(m *mocks.MockShrinker) {
+				m.EXPECT().
+					Shrink(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return("", errors.New("generic error"))
+			},
 			want: want{
-				code:     http.StatusCreated,
-				response: "664b8054bac1af66baafa7a01acd15ee",
+				code: http.StatusBadRequest,
+				body: "",
+			},
+		},
+		{
+			testName: "successfull url shortening",
+			input: input{
+				body: "http://yandex.ru",
+				uid:  someUID(),
+			},
+			expect: func(m *mocks.MockShrinker) {
+				m.EXPECT().
+					Shrink(gomock.Any(), "http://yandex.ru", someUID()).
+					Return("short", nil)
+			},
+			want: want{
+				code: http.StatusCreated,
+				body: "short",
 			},
 		},
 	}
 
-	for _, test := range tests {
-		t.Run(test.testName, func(t *testing.T) {
+	for _, tc := range tests {
+		t.Run(tc.testName, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			service := mocks.NewMockShrinker(ctrl)
+
+			tc.expect(service)
+
 			noLog := dummyLogger{}
-			storage := storage.NewInMemory(&noLog)
-			model := services.NewShortener(&noLog, storage, services.MD5Algo)
 
-			shortenHandler := NewShorten(&noLog, model,
-				"http://localhost:8080")
+			shortenHandler := NewShorten(
+				&noLog,
+				service,
+				"http://localhost:8080",
+			)
 
-			server := httptest.NewServer(http.HandlerFunc(shortenHandler.Handler))
-			defer server.Close()
-
-			req, err := http.NewRequest(
+			req := httptest.NewRequest(
 				http.MethodPost,
-				server.URL+"/",
-				strings.NewReader(test.body))
+				"/",
+				strings.NewReader(tc.input.body))
 
+			if tc.input.uid != nil {
+				ctx := context.WithValue(
+					context.Background(),
+					UID,
+					*tc.input.uid)
+				req = req.WithContext(ctx)
+			}
+
+			w := httptest.NewRecorder()
+
+			shortenHandler.Handler(w, req)
+
+			res := w.Result()
+			defer res.Body.Close()
+
+			respBody, err := io.ReadAll(res.Body)
 			require.NoError(t, err)
 
-			resp, err := server.Client().Do(req)
-			require.NoError(t, err)
-			defer func() {
-				e := resp.Body.Close()
-				require.NoError(t, e)
-			}()
+			assert.Equal(t, tc.want.code, res.StatusCode)
 
-			respBody, err := io.ReadAll(resp.Body)
-			require.NoError(t, err)
-
-			assert.Regexp(t,
-				regexp.MustCompile("http://.+/"+test.want.response),
-				string(respBody))
-
-			assert.Equal(t, test.want.code, resp.StatusCode)
+			if res.StatusCode == http.StatusCreated {
+				assert.Regexp(
+					t,
+					regexp.MustCompile("http://.+/"+tc.want.body),
+					string(respBody))
+			}
 		})
 	}
 }
