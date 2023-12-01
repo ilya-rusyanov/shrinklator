@@ -48,6 +48,14 @@ func TestDelete(t *testing.T) {
 			},
 			want: http.StatusAccepted,
 		},
+		{
+			name: "successfull delete",
+			input: input{
+				body: `["a", "b", "c"]`,
+				user: entities.UserID("2"),
+			},
+			want: http.StatusAccepted,
+		},
 	}
 
 	for _, tc := range tests {
