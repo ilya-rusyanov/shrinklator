@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"errors"
 	"fmt"
 	"strings"
@@ -11,8 +12,12 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/pressly/goose/v3"
 	"go.uber.org/zap"
 )
+
+//go:embed migrations/*.sql
+var embedMigrations embed.FS
 
 // Postgres - postgres DB storage
 type Postgres struct {
@@ -198,17 +203,15 @@ func (p *Postgres) Delete(ctx context.Context, req entities.DeleteRequest) error
 }
 
 func migrate(ctx context.Context, log Logger, db *sql.DB) error {
-	_, err := db.ExecContext(ctx,
-		`CREATE TABLE IF NOT EXISTS shorts
-(short text,
- long text UNIQUE,
- user_id text,
- is_deleted boolean NOT NULL DEFAULT false,
- PRIMARY KEY (short))`)
-	if err != nil {
-		return fmt.Errorf("failed to create table: %w", err)
+	goose.SetBaseFS(embedMigrations)
+
+	if err := goose.SetDialect("postgres"); err != nil {
+		return fmt.Errorf("failed to set dialect: %w", err)
 	}
-	log.Info("db migrated")
+
+	if err := goose.UpContext(ctx, db, "migrations"); err != nil {
+		return fmt.Errorf("failed to migrate: %w", err)
+	}
 
 	return nil
 }
