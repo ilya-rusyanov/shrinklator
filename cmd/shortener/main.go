@@ -87,7 +87,12 @@ func main() {
 		userURLsHandler.Handler,
 		delHandler.Handler)
 
-	err = server.Run(config.ListenAddr, router)
+	server := server.New(
+		config.ListenAddr,
+		router,
+	)
+
+	err = server.Run()
 	if err != nil {
 		panic(err)
 	}
