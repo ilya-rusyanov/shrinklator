@@ -10,6 +10,7 @@ type Server struct {
 	srv http.Server
 }
 
+// New consturcts a server
 func New(addr string, handler http.Handler) Server {
 	return Server{
 		srv: http.Server{
