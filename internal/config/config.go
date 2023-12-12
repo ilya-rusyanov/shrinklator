@@ -17,6 +17,7 @@ type Config struct {
 	DSN             string
 	StoreInDB       bool
 	DelBufSize      int
+	Secure          bool
 }
 
 // New - constructor
@@ -34,6 +35,8 @@ func New() *Config {
 		"data source name")
 	flag.IntVar(&res.DelBufSize, "delbuf", 10,
 		"how many delete requests to buffer")
+	flag.BoolVar(&res.Secure, "s", false,
+		"enable HTTPS")
 	return &res
 }
 
@@ -67,6 +70,10 @@ func (c *Config) MustParse() {
 		if err != nil {
 			panic(fmt.Errorf("failed to parse delete buf size: %w", err))
 		}
+	}
+
+	if val := os.Getenv("ENABLE_HTTPS"); len(val) > 0 {
+		c.Secure = true
 	}
 
 	if c.DSN != "" {
