@@ -32,7 +32,7 @@ func New() *Config {
 	flag.StringVar(&res.DSN, "d",
 		"",
 		"data source name")
-	flag.IntVar(&res.DelBufSize, "s", 10,
+	flag.IntVar(&res.DelBufSize, "delbuf", 10,
 		"how many delete requests to buffer")
 	return &res
 }
