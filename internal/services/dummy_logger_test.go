@@ -15,5 +15,8 @@ func (l *dummyLogger) Infof(string, ...any) {
 func (l *dummyLogger) Warn(...any) {
 }
 
+func (l *dummyLogger) Warnf(string, ...any) {
+}
+
 func (l *dummyLogger) Error(...any) {
 }

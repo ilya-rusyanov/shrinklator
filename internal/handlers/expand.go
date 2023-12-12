@@ -7,11 +7,11 @@ import (
 
 // Expand - expands shortened URL in plain text
 type Expand struct {
-	shrinker shrinker
+	shrinker Shrinker
 }
 
 // NewExpand constructs Expand objext
-func NewExpand(shrinker shrinker) *Expand {
+func NewExpand(shrinker Shrinker) *Expand {
 	return &Expand{
 		shrinker: shrinker,
 	}

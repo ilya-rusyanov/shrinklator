@@ -10,13 +10,13 @@ import (
 
 // Shorten - shortens URL to plain text
 type Shorten struct {
-	shrinker shrinker
+	shrinker Shrinker
 	basePath string
 	log      Logger
 }
 
 // NewShorten constructs Shorten handler
-func NewShorten(log Logger, shrinker shrinker, basePath string) *Shorten {
+func NewShorten(log Logger, shrinker Shrinker, basePath string) *Shorten {
 	return &Shorten{
 		shrinker: shrinker,
 		basePath: basePath,
@@ -27,7 +27,9 @@ func NewShorten(log Logger, shrinker shrinker, basePath string) *Shorten {
 // Handler handles HTTP requests
 func (s *Shorten) Handler(rw http.ResponseWriter, r *http.Request) {
 	sb := &strings.Builder{}
-	io.Copy(sb, r.Body)
+	if _, err := io.Copy(sb, r.Body); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+	}
 	status := http.StatusCreated
 	uid := getUID(r.Context())
 	s.log.Infof("request to shorten %q with headers %#v", sb.String(), r.Header)

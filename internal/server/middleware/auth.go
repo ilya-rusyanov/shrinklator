@@ -35,9 +35,9 @@ func NewPseudoAuth(log ExternalLogger, key, cookieName string) *PseudoAuth {
 // Middleware creates middleware
 func (a *PseudoAuth) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie(a.cookieName)
 		var uid *entities.UserID
 
+		cookie, err := r.Cookie(a.cookieName)
 		if err != nil || !a.valid(*cookie, &uid) {
 			a.log.Info("request misses auth cookie, building it")
 			uid = new(entities.UserID)

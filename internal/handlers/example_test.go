@@ -24,9 +24,17 @@ func ExampleShorten_Handler() {
 
 	handler.Handler(rw, req)
 	res := rw.Result()
-	defer res.Body.Close()
+
 	b := strings.Builder{}
-	io.Copy(&b, res.Body)
+
+	if _, err := io.Copy(&b, res.Body); err != nil {
+		fmt.Println(err)
+	}
+
+	if err := res.Body.Close(); err != nil {
+		fmt.Println(err)
+	}
+
 	fmt.Println(b.String())
 
 	// Output:

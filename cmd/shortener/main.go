@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	chiware "github.com/go-chi/chi/v5/middleware"
@@ -28,7 +29,7 @@ func newRouter(log Logger, shortenHandler http.HandlerFunc,
 	r := chi.NewRouter()
 	r.Use(middleware.NewLogger(log).Middleware())
 	r.Use(middleware.NewPseudoAuth(log, tokenKey, accessCookieName).Middleware)
-	r.Use(middleware.Gzip)
+	r.Use(middleware.NewGzip(log).Middleware)
 	r.Mount("/debug", chiware.Profiler())
 	r.Post("/", shortenHandler)
 	r.Get("/{id}", expandHandler)
@@ -41,6 +42,8 @@ func newRouter(log Logger, shortenHandler http.HandlerFunc,
 }
 
 func main() {
+	printBuildInfo(os.Stdout)
+
 	config := config.New()
 	config.MustParse()
 

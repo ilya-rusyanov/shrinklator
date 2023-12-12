@@ -4,6 +4,7 @@ package main
 type Logger interface {
 	Error(...any)
 	Info(...any)
+	Warnf(string, ...any)
 }
 
 func printDeleteErrors(log Logger, ch <-chan error) {
