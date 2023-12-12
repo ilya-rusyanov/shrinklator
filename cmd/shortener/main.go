@@ -11,6 +11,7 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/handlers"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"github.com/ilya-rusyanov/shrinklator/internal/server"
+	"github.com/ilya-rusyanov/shrinklator/internal/server/cert"
 	"github.com/ilya-rusyanov/shrinklator/internal/server/middleware"
 	"github.com/ilya-rusyanov/shrinklator/internal/services"
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
@@ -87,10 +88,20 @@ func main() {
 		userURLsHandler.Handler,
 		delHandler.Handler)
 
-	server := server.New(
+	var srvOpts []server.Opt
+	if config.Secure {
+		srvOpts = append(srvOpts, cert.New())
+	}
+
+	server, err := server.New(
+		log,
 		config.ListenAddr,
 		router,
+		srvOpts...,
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	err = server.Run()
 	if err != nil {

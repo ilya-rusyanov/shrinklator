@@ -5,27 +5,52 @@ import (
 	"net/http"
 )
 
+type Opt func(*http.Server) error
+
+type Logger interface {
+	Debug(...any)
+}
+
 // Server - main application server
 type Server struct {
 	srv http.Server
+	log Logger
 }
 
 // New consturcts a server
-func New(addr string, handler http.Handler) Server {
-	return Server{
+func New(logger Logger, addr string, handler http.Handler, opts ...Opt) (Server, error) {
+	res := Server{
 		srv: http.Server{
 			Addr:    addr,
 			Handler: handler,
 		},
+		log: logger,
 	}
+
+	for _, opt := range opts {
+		err := opt(&res.srv)
+		if err != nil {
+			return res, fmt.Errorf("failed to set server opt: %w", err)
+		}
+	}
+
+	return res, nil
 }
 
 // Run starts main application server
 func (s *Server) Run() error {
-	err := s.srv.ListenAndServe()
-
-	if err != nil {
-		return fmt.Errorf("failed to run the server: %w", err)
+	if s.srv.TLSConfig == nil {
+		s.log.Debug("starting insecure server")
+		err := s.srv.ListenAndServe()
+		if err != nil {
+			return fmt.Errorf("failed to run insecure server: %w", err)
+		}
+	} else {
+		s.log.Debug("starting https server")
+		err := s.srv.ListenAndServeTLS("", "")
+		if err != nil {
+			return fmt.Errorf("failed to run secure server: %w", err)
+		}
 	}
 
 	return nil
