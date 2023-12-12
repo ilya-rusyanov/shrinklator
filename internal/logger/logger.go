@@ -63,6 +63,7 @@ func (l *Log) Warnf(s string, args ...any) {
 	l.logger.Sugar().Warnf(s, args)
 }
 
+// Fatal logs with Fatal severity and shutdowns app
 func (l *Log) Fatal(args ...any) {
 	l.logger.Sugar().Fatal(args)
 }

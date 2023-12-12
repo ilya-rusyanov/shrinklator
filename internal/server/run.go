@@ -5,8 +5,10 @@ import (
 	"net/http"
 )
 
+// Opt is a funcopts for Server
 type Opt func(*http.Server) error
 
+// Logger logs messages
 type Logger interface {
 	Debug(...any)
 }
@@ -18,7 +20,12 @@ type Server struct {
 }
 
 // New consturcts a server
-func New(logger Logger, addr string, handler http.Handler, opts ...Opt) (*Server, error) {
+func New(
+	logger Logger,
+	addr string,
+	handler http.Handler,
+	opts ...Opt,
+) (*Server, error) {
 	res := Server{
 		srv: http.Server{
 			Addr:    addr,
