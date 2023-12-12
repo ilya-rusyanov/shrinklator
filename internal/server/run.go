@@ -18,7 +18,7 @@ type Server struct {
 }
 
 // New consturcts a server
-func New(logger Logger, addr string, handler http.Handler, opts ...Opt) (Server, error) {
+func New(logger Logger, addr string, handler http.Handler, opts ...Opt) (*Server, error) {
 	res := Server{
 		srv: http.Server{
 			Addr:    addr,
@@ -30,11 +30,11 @@ func New(logger Logger, addr string, handler http.Handler, opts ...Opt) (Server,
 	for _, opt := range opts {
 		err := opt(&res.srv)
 		if err != nil {
-			return res, fmt.Errorf("failed to set server opt: %w", err)
+			return nil, fmt.Errorf("failed to set server opt: %w", err)
 		}
 	}
 
-	return res, nil
+	return &res, nil
 }
 
 // Run starts main application server
