@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -9,20 +10,22 @@ import (
 
 // Config - app configuration
 type Config struct {
-	ListenAddr      string
-	BasePath        string
-	LogLevel        string
-	FileStoragePath string
-	StoreInFile     bool
-	DSN             string
-	StoreInDB       bool
-	DelBufSize      int
-	Secure          bool
+	ListenAddr      string `json:"server_address"`
+	BasePath        string `json:"base_url"`
+	LogLevel        string `json:"log_level"`
+	FileStoragePath string `json:"file_storage_path"`
+	StoreInFile     bool   `json:"store_in_file"`
+	DSN             string `json:"database_dsn"`
+	StoreInDB       bool   `json:"store_in_db"`
+	DelBufSize      int    `json:"del_buf_size"`
+	Secure          bool   `json:"enable_https"`
+	configFile      string
 }
 
 // New - constructor
 func New() *Config {
 	res := Config{}
+
 	flag.StringVar(
 		&res.ListenAddr, "a", ":8080",
 		"address and port to listen on")
@@ -37,11 +40,21 @@ func New() *Config {
 		"how many delete requests to buffer")
 	flag.BoolVar(&res.Secure, "s", false,
 		"enable HTTPS")
+	flag.StringVar(&res.configFile, "c", "", "configuration file")
+	flag.StringVar(&res.configFile, "config", "", "configuration file")
 	return &res
 }
 
 // MustParse - parse configuration or panic
 func (c *Config) MustParse() {
+	flag.Parse()
+
+	if val := os.Getenv("CONFIG"); len(val) > 0 {
+		c.configFile = val
+	}
+
+	c.readConfigFile()
+
 	flag.Parse()
 
 	if val, ok := os.LookupEnv("SERVER_ADDRESS"); ok {
@@ -79,4 +92,17 @@ func (c *Config) MustParse() {
 	if c.DSN != "" {
 		c.StoreInDB = true
 	}
+}
+
+func (c *Config) readConfigFile() {
+	if len(c.configFile) == 0 {
+		return
+	}
+
+	b, err := os.ReadFile(c.configFile)
+	if err != nil {
+		panic(err)
+	}
+
+	json.Unmarshal(b, c)
 }
