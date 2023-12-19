@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 
@@ -103,8 +104,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	allConnsClosed := gracefulShutdown(ctx, log, server)
+
 	err = server.Run()
-	if err != nil {
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		panic(err)
 	}
+
+	<-allConnsClosed
+	log.Debug("graceful shutdown")
 }

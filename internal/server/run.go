@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 )
@@ -58,6 +59,15 @@ func (s *Server) Run() error {
 		if err != nil {
 			return fmt.Errorf("failed to run secure server: %w", err)
 		}
+	}
+
+	return nil
+}
+
+// Stop stops main application server
+func (s *Server) Stop(ctx context.Context) error {
+	if err := s.srv.Shutdown(ctx); err != nil {
+		return fmt.Errorf("failed to shutdown server: %w", err)
 	}
 
 	return nil
