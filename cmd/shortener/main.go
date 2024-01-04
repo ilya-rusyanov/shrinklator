@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/ilya-rusyanov/shrinklator/internal/handlers"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"github.com/ilya-rusyanov/shrinklator/internal/server"
+	"github.com/ilya-rusyanov/shrinklator/internal/server/cert"
 	"github.com/ilya-rusyanov/shrinklator/internal/server/middleware"
 	"github.com/ilya-rusyanov/shrinklator/internal/services"
 	"github.com/ilya-rusyanov/shrinklator/internal/storage"
@@ -87,8 +89,28 @@ func main() {
 		userURLsHandler.Handler,
 		delHandler.Handler)
 
-	err = server.Run(config.ListenAddr, router)
+	var srvOpts []server.Opt
+	if config.Secure {
+		srvOpts = append(srvOpts, cert.New())
+	}
+
+	server, err := server.New(
+		log,
+		config.ListenAddr,
+		router,
+		srvOpts...,
+	)
 	if err != nil {
+		log.Fatal(err)
+	}
+
+	allConnsClosed := gracefulShutdown(ctx, log, server)
+
+	err = server.Run()
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		panic(err)
 	}
+
+	<-allConnsClosed
+	log.Debug("graceful shutdown")
 }
