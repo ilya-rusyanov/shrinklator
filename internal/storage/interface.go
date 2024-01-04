@@ -15,4 +15,5 @@ type Interface interface {
 	Delete(context.Context, entities.DeleteRequest) error
 	MustClose()
 	Ping(context.Context) error
+	CountUsersAndUrls(context.Context) (entities.Stats, error)
 }

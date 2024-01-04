@@ -112,6 +112,11 @@ func (f *File) Ping(context.Context) error {
 	return nil
 }
 
+// CountUsersAndUrls counts users and URLs
+func (f *File) CountUsersAndUrls(context.Context) (entities.Stats, error) {
+	return entities.Stats{}, errors.New("not implemented")
+}
+
 func (f *File) memoryStore(id, value string) error {
 	if val, ok := f.data[id]; ok {
 		return ErrAlreadyExists{

@@ -27,7 +27,9 @@ func newRouter(log Logger, shortenHandler http.HandlerFunc,
 	pingHandler http.HandlerFunc,
 	batchHandler http.HandlerFunc,
 	userURLs http.HandlerFunc,
-	del http.HandlerFunc) chi.Router {
+	del http.HandlerFunc,
+	stats http.HandlerFunc,
+) chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.NewLogger(log).Middleware())
 	r.Use(middleware.NewPseudoAuth(log, tokenKey, accessCookieName).Middleware)
@@ -40,6 +42,7 @@ func newRouter(log Logger, shortenHandler http.HandlerFunc,
 	r.Post("/api/shorten/batch", batchHandler)
 	r.Get("/api/user/urls", userURLs)
 	r.Delete("/api/user/urls", del)
+	r.Get("/api/internal/stats", stats)
 	return r
 }
 
@@ -79,6 +82,11 @@ func main() {
 	userURLsHandler := handlers.NewUserURLs(log, userURLsService, config.BasePath)
 	delHandler := handlers.NewDeleteHandler(log, userURLsService)
 
+	statsHandler, err := handlers.NewStatsHandler(log, repository, config.TrustedSubnet)
+	if err != nil {
+		panic(err)
+	}
+
 	router := newRouter(
 		log,
 		shortenHandler.Handler,
@@ -87,7 +95,9 @@ func main() {
 		pingHandler.Handler,
 		batchHandler.Handler,
 		userURLsHandler.Handler,
-		delHandler.Handler)
+		delHandler.Handler,
+		statsHandler.Handler,
+	)
 
 	var srvOpts []server.Opt
 	if config.Secure {
