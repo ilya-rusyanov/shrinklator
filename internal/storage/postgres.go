@@ -202,6 +202,25 @@ func (p *Postgres) Delete(ctx context.Context, req entities.DeleteRequest) error
 	return nil
 }
 
+// CountUsersAndUrls - counts users and URLs
+func (p *Postgres) CountUsersAndUrls(ctx context.Context) (entities.Stats, error) {
+	var res entities.Stats
+
+	err := p.db.QueryRowContext(
+		ctx, `SELECT COUNT(short) FROM shorts WHERE is_deleted = false`).Scan(&res.URLs)
+	if err != nil {
+		return res, fmt.Errorf("error selecting URLs: %w", err)
+	}
+
+	err = p.db.QueryRowContext(
+		ctx, `SELECT COUNT(DISTINCT user_id) FROM shorts WHERE is_deleted = false`).Scan(&res.Users)
+	if err != nil {
+		return res, fmt.Errorf("error selecting users: %w", err)
+	}
+
+	return res, nil
+}
+
 func migrate(ctx context.Context, log Logger, db *sql.DB) error {
 	goose.SetBaseFS(embedMigrations)
 

@@ -48,13 +48,13 @@ func New(
 // Run starts main application server
 func (s *Server) Run() error {
 	if s.srv.TLSConfig == nil {
-		s.log.Debug("starting insecure server")
+		s.log.Debug("starting insecure server on ", s.srv.Addr)
 		err := s.srv.ListenAndServe()
 		if err != nil {
 			return fmt.Errorf("failed to run insecure server: %w", err)
 		}
 	} else {
-		s.log.Debug("starting https server")
+		s.log.Debug("starting https server on ", s.srv.Addr)
 		err := s.srv.ListenAndServeTLS("", "")
 		if err != nil {
 			return fmt.Errorf("failed to run secure server: %w", err)
