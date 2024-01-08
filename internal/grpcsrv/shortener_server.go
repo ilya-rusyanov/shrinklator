@@ -31,6 +31,11 @@ type UserLister interface {
 	URLsForUser(context.Context, entities.UserID) (entities.PairArray, error)
 }
 
+// Deleter asynchroniously deletes user URLs
+type Deleter interface {
+	Delete(context.Context, entities.DeleteRequest) error
+}
+
 // ShrotenerServer is shortener implementation in gRPC
 type Service struct {
 	pb.UnimplementedShortenerServer
@@ -40,6 +45,7 @@ type Service struct {
 	pinger         Pinger
 	batchServicer  BatchServicer
 	userLister     UserLister
+	deleter        Deleter
 }
 
 // NewService constructs gRPC service
@@ -49,6 +55,7 @@ func NewService(
 	pinger Pinger,
 	batcher BatchServicer,
 	lister UserLister,
+	deleter Deleter,
 ) *Service {
 	return &Service{
 		basePath:       base,
@@ -56,6 +63,7 @@ func NewService(
 		pinger:         pinger,
 		batchServicer:  batcher,
 		userLister:     lister,
+		deleter:        deleter,
 	}
 }
 
@@ -103,7 +111,7 @@ func (s *Service) Ping(ctx context.Context, empty *pb.Empty) (*pb.Empty, error) 
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	return nil, nil
+	return &pb.Empty{}, nil
 }
 
 // Batch bulk shortens URLs
@@ -157,6 +165,22 @@ func (s *Service) List(ctx context.Context, empty *pb.Empty) (*pb.URLs, error) {
 }
 
 // Delete deletes URLs for user
-func (s *Service) Delete(context.Context, *pb.URLs) (*pb.Empty, error) {
-	return nil, nil
+func (s *Service) Delete(ctx context.Context, req *pb.URLs) (*pb.Empty, error) {
+	user := getUID(ctx)
+	if user == nil {
+		return nil, status.Errorf(codes.PermissionDenied, "only authorized users are allowed")
+	}
+
+	deleteRequest := make([]entities.UserAndShort, len(req.Links))
+	for i, l := range req.Links {
+		deleteRequest[i].URL = l
+		deleteRequest[i].UID = *user
+	}
+
+	err := s.deleter.Delete(ctx, deleteRequest)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	return &pb.Empty{}, nil
 }
