@@ -12,12 +12,14 @@ import (
 // Server - gRPC server
 type Server struct {
 	service *Service
+	opts    []grpc.ServerOption
 }
 
 // New constructs new gRPC server
-func New(s *Service) (*Server, error) {
+func New(s *Service, opts ...grpc.ServerOption) (*Server, error) {
 	return &Server{
 		service: s,
+		opts:    opts,
 	}, nil
 }
 
@@ -29,7 +31,7 @@ func (s *Server) Run() error {
 		return err
 	}
 	// создаём gRPC-сервер без зарегистрированной службы
-	srv := grpc.NewServer()
+	srv := grpc.NewServer(s.opts...)
 	// регистрируем сервис
 	pb.RegisterShortenerServer(srv, s.service)
 

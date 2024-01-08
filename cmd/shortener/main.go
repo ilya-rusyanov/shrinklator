@@ -10,6 +10,7 @@ import (
 	chiware "github.com/go-chi/chi/v5/middleware"
 	"github.com/ilya-rusyanov/shrinklator/internal/config"
 	"github.com/ilya-rusyanov/shrinklator/internal/grpcsrv"
+	"github.com/ilya-rusyanov/shrinklator/internal/grpcsrv/interceptors"
 	"github.com/ilya-rusyanov/shrinklator/internal/handlers"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"github.com/ilya-rusyanov/shrinklator/internal/server"
@@ -119,7 +120,7 @@ func main() {
 		config.BasePath,
 		shortenerService,
 	)
-	grpcServer, err := grpcsrv.New(grpcSvc)
+	grpcServer, err := grpcsrv.New(grpcSvc, interceptors.NewAuth(tokenKey, accessCookieName))
 	if err != nil {
 		panic(err)
 	}
