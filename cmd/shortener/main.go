@@ -115,7 +115,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	grpcSvc := grpcsrv.NewService()
+	grpcSvc := grpcsrv.NewService(
+		config.BasePath,
+		shortenerService,
+	)
 	grpcServer, err := grpcsrv.New(grpcSvc)
 	if err != nil {
 		panic(err)

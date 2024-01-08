@@ -5,7 +5,7 @@ package shortener;
 option go_package = "shortener/proto";
 
 message URL {
-  string url = 1;
+  string link = 1;
 }
 
 message BatchPayload {
@@ -17,7 +17,7 @@ message BatchPayload {
 }
 
 message URLs {
-  repeated string urls = 1;
+  repeated string links = 1;
 }
 
 message Empty {
@@ -29,5 +29,5 @@ service Shortener {
   rpc Ping(Empty) returns (Empty);
   rpc Batch(BatchPayload) returns (BatchPayload);
   rpc List(Empty) returns (URLs);
-  rpc DeleteRequest(URLs) returns (Empty);
+  rpc Delete(URLs) returns (Empty);
 }

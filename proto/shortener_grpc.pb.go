@@ -19,12 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Shortener_Shorten_FullMethodName       = "/shortener.Shortener/Shorten"
-	Shortener_Expand_FullMethodName        = "/shortener.Shortener/Expand"
-	Shortener_Ping_FullMethodName          = "/shortener.Shortener/Ping"
-	Shortener_Batch_FullMethodName         = "/shortener.Shortener/Batch"
-	Shortener_List_FullMethodName          = "/shortener.Shortener/List"
-	Shortener_DeleteRequest_FullMethodName = "/shortener.Shortener/DeleteRequest"
+	Shortener_Shorten_FullMethodName = "/shortener.Shortener/Shorten"
+	Shortener_Expand_FullMethodName  = "/shortener.Shortener/Expand"
+	Shortener_Ping_FullMethodName    = "/shortener.Shortener/Ping"
+	Shortener_Batch_FullMethodName   = "/shortener.Shortener/Batch"
+	Shortener_List_FullMethodName    = "/shortener.Shortener/List"
+	Shortener_Delete_FullMethodName  = "/shortener.Shortener/Delete"
 )
 
 // ShortenerClient is the client API for Shortener service.
@@ -36,7 +36,7 @@ type ShortenerClient interface {
 	Ping(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
 	Batch(ctx context.Context, in *BatchPayload, opts ...grpc.CallOption) (*BatchPayload, error)
 	List(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*URLs, error)
-	DeleteRequest(ctx context.Context, in *URLs, opts ...grpc.CallOption) (*Empty, error)
+	Delete(ctx context.Context, in *URLs, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type shortenerClient struct {
@@ -92,9 +92,9 @@ func (c *shortenerClient) List(ctx context.Context, in *Empty, opts ...grpc.Call
 	return out, nil
 }
 
-func (c *shortenerClient) DeleteRequest(ctx context.Context, in *URLs, opts ...grpc.CallOption) (*Empty, error) {
+func (c *shortenerClient) Delete(ctx context.Context, in *URLs, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, Shortener_DeleteRequest_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Shortener_Delete_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ type ShortenerServer interface {
 	Ping(context.Context, *Empty) (*Empty, error)
 	Batch(context.Context, *BatchPayload) (*BatchPayload, error)
 	List(context.Context, *Empty) (*URLs, error)
-	DeleteRequest(context.Context, *URLs) (*Empty, error)
+	Delete(context.Context, *URLs) (*Empty, error)
 	mustEmbedUnimplementedShortenerServer()
 }
 
@@ -133,8 +133,8 @@ func (UnimplementedShortenerServer) Batch(context.Context, *BatchPayload) (*Batc
 func (UnimplementedShortenerServer) List(context.Context, *Empty) (*URLs, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
 }
-func (UnimplementedShortenerServer) DeleteRequest(context.Context, *URLs) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteRequest not implemented")
+func (UnimplementedShortenerServer) Delete(context.Context, *URLs) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedShortenerServer) mustEmbedUnimplementedShortenerServer() {}
 
@@ -239,20 +239,20 @@ func _Shortener_List_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Shortener_DeleteRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Shortener_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(URLs)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ShortenerServer).DeleteRequest(ctx, in)
+		return srv.(ShortenerServer).Delete(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Shortener_DeleteRequest_FullMethodName,
+		FullMethod: Shortener_Delete_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ShortenerServer).DeleteRequest(ctx, req.(*URLs))
+		return srv.(ShortenerServer).Delete(ctx, req.(*URLs))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -285,8 +285,8 @@ var Shortener_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Shortener_List_Handler,
 		},
 		{
-			MethodName: "DeleteRequest",
-			Handler:    _Shortener_DeleteRequest_Handler,
+			MethodName: "Delete",
+			Handler:    _Shortener_Delete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

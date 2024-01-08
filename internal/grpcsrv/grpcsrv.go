@@ -44,5 +44,6 @@ func (s *Server) Run() error {
 
 // Stop stops the server
 func (s *Server) Stop(ctx context.Context) error {
+	// TODO: implement
 	return nil
 }
