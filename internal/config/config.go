@@ -19,6 +19,7 @@ type Config struct {
 	StoreInDB       bool   `json:"store_in_db"`
 	DelBufSize      int    `json:"del_buf_size"`
 	Secure          bool   `json:"enable_https"`
+	TrustedSubnet   string `json:"trusted_subnet"`
 	configFile      string
 }
 
@@ -40,6 +41,7 @@ func New() *Config {
 		"how many delete requests to buffer")
 	flag.BoolVar(&res.Secure, "s", false,
 		"enable HTTPS")
+	flag.StringVar(&res.TrustedSubnet, "t", "", "trusted subnet")
 	flag.StringVar(&res.configFile, "c", "", "configuration file")
 	flag.StringVar(&res.configFile, "config", "", "configuration file")
 	return &res
@@ -91,6 +93,10 @@ func (c *Config) MustParse() {
 
 	if c.DSN != "" {
 		c.StoreInDB = true
+	}
+
+	if val := os.Getenv("TRUSTED_SUBNET"); len(val) > 0 {
+		c.TrustedSubnet = val
 	}
 }
 
