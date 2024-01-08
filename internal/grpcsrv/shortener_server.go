@@ -26,6 +26,11 @@ type BatchServicer interface {
 	BatchShorten(context.Context, []entities.BatchRequest) ([]entities.BatchResponse, error)
 }
 
+// UserLister lists URLs for certain user
+type UserLister interface {
+	URLsForUser(context.Context, entities.UserID) (entities.PairArray, error)
+}
+
 // ShrotenerServer is shortener implementation in gRPC
 type Service struct {
 	pb.UnimplementedShortenerServer
@@ -34,6 +39,7 @@ type Service struct {
 	shortenService ShortenerService
 	pinger         Pinger
 	batchServicer  BatchServicer
+	userLister     UserLister
 }
 
 // NewService constructs gRPC service
@@ -42,12 +48,14 @@ func NewService(
 	shortenService ShortenerService,
 	pinger Pinger,
 	batcher BatchServicer,
+	lister UserLister,
 ) *Service {
 	return &Service{
 		basePath:       base,
 		shortenService: shortenService,
 		pinger:         pinger,
 		batchServicer:  batcher,
+		userLister:     lister,
 	}
 }
 
@@ -127,8 +135,25 @@ func (s *Service) Batch(ctx context.Context, req *pb.BatchPayload) (*pb.BatchPay
 }
 
 // List list URLs for user
-func (s *Service) List(context.Context, *pb.Empty) (*pb.URLs, error) {
-	return nil, nil
+func (s *Service) List(ctx context.Context, empty *pb.Empty) (*pb.URLs, error) {
+	user := getUID(ctx)
+	if user == nil {
+		return nil, status.Errorf(codes.PermissionDenied, "user ID is expected")
+	}
+
+	urls, err := s.userLister.URLsForUser(ctx, *user)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	var res pb.URLs
+	res.Links = make([]string, len(urls))
+
+	for i, u := range urls {
+		res.Links[i] = s.basePath + "/" + u.Short
+	}
+
+	return &res, nil
 }
 
 // Delete deletes URLs for user

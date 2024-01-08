@@ -121,6 +121,7 @@ func main() {
 		shortenerService,
 		pingService,
 		batchService,
+		userURLsService,
 	)
 	grpcServer, err := grpcsrv.New(grpcSvc, interceptors.NewAuth(tokenKey, accessCookieName))
 	if err != nil {
