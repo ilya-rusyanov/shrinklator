@@ -80,7 +80,7 @@ func (s *Service) Shorten(ctx context.Context, url *pb.URL) (*pb.URL, error) {
 	response.Link, err = s.shortenService.Shrink(ctx, url.Link, user)
 	if err != nil {
 		if response.Link, err = handleAlreadyExists(err, &code); err != nil {
-			return nil, status.Errorf(codes.Internal, "cannot shorten URL: %w", err)
+			return nil, status.Errorf(codes.Internal, "cannot shorten URL: %s", err.Error())
 		}
 	}
 
