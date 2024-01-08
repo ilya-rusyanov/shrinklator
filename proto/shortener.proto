@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package shortener;
+
+option go_package = "shortener/proto";
+
+message URL {
+  string url = 1;
+}
+
+message BatchPayload {
+  message Unit {
+    string correlation_id = 1;
+    string url = 2;
+  }
+  repeated Unit units = 1;
+}
+
+message URLs {
+  repeated string urls = 1;
+}
+
+message Empty {
+}
+
+service Shortener {
+  rpc Shorten(URL) returns (URL);
+  rpc Expand(URL) returns (URL);
+  rpc Ping(Empty) returns (Empty);
+  rpc Batch(BatchPayload) returns (BatchPayload);
+  rpc List(Empty) returns (URLs);
+  rpc DeleteRequest(URLs) returns (Empty);
+}

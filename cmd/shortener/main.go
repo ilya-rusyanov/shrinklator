@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	chiware "github.com/go-chi/chi/v5/middleware"
 	"github.com/ilya-rusyanov/shrinklator/internal/config"
+	"github.com/ilya-rusyanov/shrinklator/internal/grpcsrv"
 	"github.com/ilya-rusyanov/shrinklator/internal/handlers"
 	"github.com/ilya-rusyanov/shrinklator/internal/logger"
 	"github.com/ilya-rusyanov/shrinklator/internal/server"
@@ -114,7 +115,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	allConnsClosed := gracefulShutdown(ctx, log, []shutdowner{server}...)
+	grpcSvc := grpcsrv.NewService()
+	grpcServer, err := grpcsrv.New(grpcSvc)
+	if err != nil {
+		panic(err)
+	}
+
+	allConnsClosed := gracefulShutdown(ctx, log, []shutdowner{server, grpcServer}...)
+
+	go func() {
+		if err := grpcServer.Run(); err != nil {
+			panic(err)
+		}
+	}()
 
 	err = server.Run()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
