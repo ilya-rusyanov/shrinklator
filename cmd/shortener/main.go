@@ -114,7 +114,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	allConnsClosed := gracefulShutdown(ctx, log, server)
+	allConnsClosed := gracefulShutdown(ctx, log, []shutdowner{server}...)
 
 	err = server.Run()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
