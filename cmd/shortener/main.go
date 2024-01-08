@@ -119,6 +119,7 @@ func main() {
 	grpcSvc := grpcsrv.NewService(
 		config.BasePath,
 		shortenerService,
+		pingService,
 	)
 	grpcServer, err := grpcsrv.New(grpcSvc, interceptors.NewAuth(tokenKey, accessCookieName))
 	if err != nil {

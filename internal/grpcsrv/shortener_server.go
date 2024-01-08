@@ -16,19 +16,29 @@ type ShortenerService interface {
 	Expand(context.Context, string) (entities.ExpandResult, error)
 }
 
+type Pinger interface {
+	Ping(context.Context) error
+}
+
 // ShrotenerServer is shortener implementation in gRPC
 type Service struct {
 	pb.UnimplementedShortenerServer
 
 	basePath       string
 	shortenService ShortenerService
+	pinger         Pinger
 }
 
 // NewService constructs gRPC service
-func NewService(base string, shortenService ShortenerService) *Service {
+func NewService(
+	base string,
+	shortenService ShortenerService,
+	pinger Pinger,
+) *Service {
 	return &Service{
 		basePath:       base,
 		shortenService: shortenService,
+		pinger:         pinger,
 	}
 }
 
@@ -70,7 +80,12 @@ func (s *Service) Expand(ctx context.Context, url *pb.URL) (*pb.URL, error) {
 }
 
 // Ping pings database
-func (s *Service) Ping(context.Context, *pb.Empty) (*pb.Empty, error) {
+func (s *Service) Ping(ctx context.Context, empty *pb.Empty) (*pb.Empty, error) {
+	err := s.pinger.Ping(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
 	return nil, nil
 }
 
