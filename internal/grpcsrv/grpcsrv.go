@@ -13,6 +13,7 @@ import (
 type Server struct {
 	service *Service
 	opts    []grpc.ServerOption
+	server  *grpc.Server
 }
 
 // New constructs new gRPC server
@@ -46,6 +47,11 @@ func (s *Server) Run() error {
 
 // Stop stops the server
 func (s *Server) Stop(ctx context.Context) error {
-	// TODO: implement
+	if s.server == nil {
+		return nil
+	}
+
+	s.server.GracefulStop()
+
 	return nil
 }
