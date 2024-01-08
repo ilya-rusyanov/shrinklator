@@ -2,6 +2,7 @@ package grpcsrv
 
 import (
 	"context"
+	"strings"
 
 	"github.com/ilya-rusyanov/shrinklator/internal/entities"
 	pb "github.com/ilya-rusyanov/shrinklator/proto"
@@ -52,8 +53,20 @@ func (s *Service) Shorten(ctx context.Context, url *pb.URL) (*pb.URL, error) {
 }
 
 // Expand expands URL
-func (s *Service) Expand(context.Context, *pb.URL) (*pb.URL, error) {
-	return nil, nil
+func (s *Service) Expand(ctx context.Context, url *pb.URL) (*pb.URL, error) {
+	urlPart := strings.TrimLeft(url.Link, "/")
+
+	expandResult, err := s.shortenService.Expand(ctx, urlPart)
+
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "entry not found")
+	}
+
+	if expandResult.Removed {
+		return nil, status.Errorf(codes.DataLoss, "entry is removed")
+	}
+
+	return &pb.URL{Link: expandResult.URL}, nil
 }
 
 // Ping pings database
