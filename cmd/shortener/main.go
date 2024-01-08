@@ -120,6 +120,7 @@ func main() {
 		config.BasePath,
 		shortenerService,
 		pingService,
+		batchService,
 	)
 	grpcServer, err := grpcsrv.New(grpcSvc, interceptors.NewAuth(tokenKey, accessCookieName))
 	if err != nil {

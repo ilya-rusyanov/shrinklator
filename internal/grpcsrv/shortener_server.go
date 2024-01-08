@@ -16,8 +16,14 @@ type ShortenerService interface {
 	Expand(context.Context, string) (entities.ExpandResult, error)
 }
 
+// Pinger is UC for pinging DB
 type Pinger interface {
 	Ping(context.Context) error
+}
+
+// BatchServicer shortens URLs in bulk
+type BatchServicer interface {
+	BatchShorten(context.Context, []entities.BatchRequest) ([]entities.BatchResponse, error)
 }
 
 // ShrotenerServer is shortener implementation in gRPC
@@ -27,6 +33,7 @@ type Service struct {
 	basePath       string
 	shortenService ShortenerService
 	pinger         Pinger
+	batchServicer  BatchServicer
 }
 
 // NewService constructs gRPC service
@@ -34,11 +41,13 @@ func NewService(
 	base string,
 	shortenService ShortenerService,
 	pinger Pinger,
+	batcher BatchServicer,
 ) *Service {
 	return &Service{
 		basePath:       base,
 		shortenService: shortenService,
 		pinger:         pinger,
+		batchServicer:  batcher,
 	}
 }
 
@@ -90,8 +99,31 @@ func (s *Service) Ping(ctx context.Context, empty *pb.Empty) (*pb.Empty, error) 
 }
 
 // Batch bulk shortens URLs
-func (s *Service) Batch(context.Context, *pb.BatchPayload) (*pb.BatchPayload, error) {
-	return nil, nil
+func (s *Service) Batch(ctx context.Context, req *pb.BatchPayload) (*pb.BatchPayload, error) {
+	var res pb.BatchPayload
+
+	in := make([]entities.BatchRequest, len(req.Units))
+	for i, u := range req.Units {
+		in[i].ID = u.CorrelationId
+		in[i].LongURL = u.Url
+	}
+
+	shortened, err := s.batchServicer.BatchShorten(ctx, in)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	res.Units = make([]*pb.BatchPayload_Unit, len(shortened))
+	for i, u := range shortened {
+		var unit pb.BatchPayload_Unit
+
+		unit.CorrelationId = u.ID
+		unit.Url = s.basePath + "/" + u.ShortURL
+
+		res.Units[i] = &unit
+	}
+
+	return &res, nil
 }
 
 // List list URLs for user
