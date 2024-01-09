@@ -85,3 +85,8 @@ func (s *InMemory) Delete(context.Context, entities.DeleteRequest) error {
 func (s *InMemory) Ping(context.Context) error {
 	return nil
 }
+
+// CountUsersAndUrls counts Users and URLs
+func (s *InMemory) CountUsersAndUrls(context.Context) (entities.Stats, error) {
+	return entities.Stats{}, errors.New("not implemented")
+}
